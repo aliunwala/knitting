@@ -1,10 +1,22 @@
 "use client";
-import { on } from "events";
+// import { on } from "events";
 import Cell from "./cell";
 import { useState } from "react";
-import { modify2DArray } from "../utils/helperFunctions";
+import {
+  copyTextToClipboard,
+  downloadText,
+  modify2DArray,
+} from "../utils/helperFunctions";
+import ColorSelect from "./select";
 
 export default function Board() {
+  const colorsEnum = {
+    Red: "#FF0000",
+    Blue: "#4169E1",
+    Green: "#00FF00",
+    Orange: "#FFA500",
+    Purple: "#9F2B68",
+  };
   const [fillColor, setFillColor] = useState("#FF0000");
   const [cellColor, setCellColor] = useState("#FF0000");
   const [userSavedBoardState, setUserSavedBoardState] = useState("");
@@ -20,50 +32,38 @@ export default function Board() {
   const [board, setBoard] = useState(initalBoardState(rowLen, rowNum));
 
   function handleCellClick(e: any, row: number, col: number) {
-    const newBoard = { ...board[row][col], color: cellColor };
-    setBoard((state) => modify2DArray(state, row, col, newBoard));
-    e.target.style.background = cellColor;
+    const newCell = { ...board[row][col], color: cellColor };
+    setBoard((state) => modify2DArray(state, row, col, newCell));
+  }
+  function handleColorAllCellsToOneColor(e) {
+    // setFillColor(e.target.value);
+    setBoard((state) => initalBoardState(rowLen, rowNum, fillColor));
   }
 
   return (
     <>
       <br></br>
-      <label htmlFor="color-select">Choose a color to fill all cells:</label>
-      <select
-        value={fillColor} // ...force the select's value to match the state variable...
-        onChange={(e) => {
-          setFillColor(e.target.value);
-          setBoard((state) => initalBoardState(rowLen, rowNum, e.target.value));
-        }} // ... and update the state variable on any change!
-        name="colors"
-        id="color-select"
-        className="bg-transparent hover:bg-blue-50 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+      <ColorSelect
+        label={"Choose a color to fill all cells:"}
+        cellColor={fillColor}
+        setCellColor={setFillColor}
+        colorsEnum={colorsEnum}
+      ></ColorSelect>
+      <button
+        onClick={(e) => handleColorAllCellsToOneColor(e)}
+        type="button"
+        className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
       >
-        <option value="">Please choose color option:</option>
-        <option value="#FF0000">Red</option>
-        <option value="#4169E1">Blue</option>
-        <option value="#00FF00">Green</option>
-        <option value="#FFA500">Orange</option>
-        <option value="#9F2B68">Purple</option>
-        <option value="#11ffe3">Teal</option>
-      </select>
+        Click to color all cells
+      </button>
       <br></br>
-      <label htmlFor="color-select">Choose a color:</label>
-      <select
-        value={cellColor} // ...force the select's value to match the state variable...
-        onChange={(e) => setCellColor(e.target.value)} // ... and update the state variable on any change!
-        name="colors"
-        id="color-select"
-        className="bg-transparent hover:bg-blue-50 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
-      >
-        <option value="">Please choose color option:</option>
-        <option value="#FF0000">Red</option>
-        <option value="#4169E1">Blue</option>
-        <option value="#00FF00">Green</option>
-        <option value="#FFA500">Orange</option>
-        <option value="#9F2B68">Purple</option>
-        <option value="#11ffe3">Teal</option>
-      </select>
+      <ColorSelect
+        label={"Choose a color:"}
+        cellColor={cellColor}
+        setCellColor={setCellColor}
+        colorsEnum={colorsEnum}
+      ></ColorSelect>
+
       <br></br>
       <br></br>
       {board.map((rowArr: Array<any>, row, arr) => {
@@ -88,13 +88,25 @@ export default function Board() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          console.log(userSavedBoardState);
-          setBoard((state) => {
-            // let newState = JSON.parse(userSavedBoardState)
-            // function revalidateBoardColors(newState){
-            // }
-            return JSON.parse(userSavedBoardState);
-          });
+          let JSONuserSavedBoardStateTEMP: any;
+          try {
+            const JSONuserSavedBoardState = JSON.parse(userSavedBoardState);
+            if (JSONuserSavedBoardState.length != rowNum) {
+              throw new Error("Not enoungh rows in data");
+            }
+            if (JSONuserSavedBoardState[0].length != rowLen) {
+              throw new Error("Not enoungh left to right cells in data");
+            }
+            JSONuserSavedBoardStateTEMP = JSONuserSavedBoardState;
+            // return JSONuserSavedBoardState;
+          } catch (e) {
+            console.log("Error when updating board state: " + e);
+          }
+
+          JSONuserSavedBoardStateTEMP &&
+            setBoard((state) => {
+              return JSONuserSavedBoardStateTEMP;
+            });
         }}
       >
         <label htmlFor="boardState">Saved board state:</label>
@@ -104,11 +116,12 @@ export default function Board() {
           id="boardState"
           name="boardState"
           value={userSavedBoardState}
+          className="outline-solid outline outline-blue-500 h-10"
           onChange={(e) => {
             setUserSavedBoardState(e.target.value);
           }}
         ></input>
-        <br></br>
+
         <button
           className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
           type="submit"
@@ -120,11 +133,30 @@ export default function Board() {
 
       <br></br>
       <button
-        onClick={() => console.log(JSON.stringify(board))}
+        onClick={() => {
+          const boardStateToPrint = String(JSON.stringify(board));
+          console.log(boardStateToPrint);
+          copyTextToClipboard(boardStateToPrint);
+        }}
         type="button"
         className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
       >
-        Print state to console
+        Copy state to clipboard
+      </button>
+      <button
+        onClick={() => {
+          const boardStateToPrint = String(JSON.stringify(board));
+          console.log(boardStateToPrint);
+          copyTextToClipboard(boardStateToPrint);
+          downloadText(
+            boardStateToPrint,
+            `boardState${String(new Date().toISOString())}.txt`
+          );
+        }}
+        type="button"
+        className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+      >
+        Download state to computer
       </button>
     </>
   );

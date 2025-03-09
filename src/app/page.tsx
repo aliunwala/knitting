@@ -1,6 +1,6 @@
-import Image from "next/image";
-import Game from "@/app/components/tickTackToe";
-import Cell from "@/app/components/cell";
+// import Image from "next/image";
+// import Game from "@/app/components/tickTackToe";
+// import Cell from "@/app/components/cell";
 import Board from "./components/board";
 export default function Home() {
   return (
