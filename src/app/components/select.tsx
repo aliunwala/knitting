@@ -1,7 +1,7 @@
 type ColorSelectProps = {
   cellColor: string;
   setCellColor: Function;
-  colorsEnum: {};
+  colorsEnum: object;
   label: string;
 };
 export default function ColorSelect({
@@ -31,12 +31,6 @@ export default function ColorSelect({
             </option>
           );
         })}
-        {/* <option value="#FF0000">Red</option>
-        <option value="#4169E1">Blue</option>
-        <option value="#00FF00">Green</option>
-        <option value="#FFA500">Orange</option>
-        <option value="#9F2B68">Purple</option>
-        <option value="#11ffe3">Teal</option> */}
       </select>
     </>
   );

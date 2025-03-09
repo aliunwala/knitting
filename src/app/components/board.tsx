@@ -57,6 +57,8 @@ export default function Board() {
         Click to color all cells
       </button>
       <br></br>
+      <br></br>
+
       <ColorSelect
         label={"Choose a color:"}
         cellColor={cellColor}
@@ -103,10 +105,11 @@ export default function Board() {
             console.log("Error when updating board state: " + e);
           }
 
-          JSONuserSavedBoardStateTEMP &&
+          if (JSONuserSavedBoardStateTEMP) {
             setBoard((state) => {
               return JSONuserSavedBoardStateTEMP;
             });
+          }
         }}
       >
         <label htmlFor="boardState">Saved board state:</label>

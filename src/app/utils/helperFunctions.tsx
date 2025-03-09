@@ -12,8 +12,8 @@ export const modify2DArray = (
 };
 
 // https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
-let fallbackCopyTextToClipboard = function (text: string) {
-  let textArea = document.createElement("textarea");
+const fallbackCopyTextToClipboard = function (text: string) {
+  const textArea = document.createElement("textarea");
   textArea.value = text;
 
   // Avoid scrolling to bottom
@@ -26,8 +26,8 @@ let fallbackCopyTextToClipboard = function (text: string) {
   textArea.select();
 
   try {
-    let successful = document.execCommand("copy");
-    let msg = successful ? "successful" : "unsuccessful";
+    const successful = document.execCommand("copy");
+    const msg = successful ? "successful" : "unsuccessful";
     console.log("Fallback: Copying text command was " + msg);
   } catch (err) {
     console.error("Fallback: Oops, unable to copy", err);
@@ -36,7 +36,7 @@ let fallbackCopyTextToClipboard = function (text: string) {
   document.body.removeChild(textArea);
 };
 
-export let copyTextToClipboard = function (text: string) {
+export const copyTextToClipboard = function (text: string) {
   if (!navigator.clipboard) {
     fallbackCopyTextToClipboard(text);
     return;
@@ -61,8 +61,8 @@ export function downloadText(
   if (!contentType) {
     contentType = "text/plain";
   }
-  var a = document.createElement("a");
-  var file = new Blob([content], { type: contentType });
+  const a = document.createElement("a");
+  const file = new Blob([content], { type: contentType });
   a.href = URL.createObjectURL(file);
   a.download = fileName;
   a.click();
