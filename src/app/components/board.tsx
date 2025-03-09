@@ -11,7 +11,7 @@ export default function Board() {
   const [rowLen, setRowLen] = useState(10);
   const [rowNum, setRowNum] = useState(10);
   function initalBoardState(rowLen: number, rowNum: number, color = "#FFFFFF") {
-    let boardState: Array<{ color: string }>[] = []; //Array(rowNum).fill(Array(rowLen).fill("x"));
+    const boardState: Array<{ color: string }>[] = []; //Array(rowNum).fill(Array(rowLen).fill("x"));
     for (let i = 0; i < rowNum; i++) {
       boardState.push(new Array(rowLen).fill({ color: color }));
     }
@@ -68,7 +68,7 @@ export default function Board() {
       <br></br>
       {board.map((rowArr: Array<any>, row, arr) => {
         return (
-          <div className="flex">
+          <div key={row + "divforcells"} className="flex">
             {rowArr.map((cellVal: any, col) => {
               return (
                 <Cell
