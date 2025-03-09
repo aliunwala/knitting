@@ -5,7 +5,9 @@ import Board from "./components/board";
 export default function Home() {
   return (
     <>
-      <Board></Board>
+      <div className="ml-8 mr-8">
+        <Board></Board>
+      </div>
     </>
   );
 

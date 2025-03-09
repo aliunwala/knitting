@@ -1,7 +1,7 @@
 import { MouseEventHandler } from "react";
 
 type CellProps = {
-  handleCellClick?: MouseEventHandler<HTMLButtonElement>;
+  handleCellClick?: MouseEventHandler<HTMLElement>;
   children?: any;
   row?: number;
   col?: number;
@@ -19,12 +19,11 @@ export default function Cell({
   //   console.log("onMouseOverHandler");
   // }
   return (
-    <button
+    <div
       className="cell"
+      style={{ background: cellColor }}
       onClick={handleCellClick}
       // onMouseOver={onMouseOverHandler}
-    >
-      {children}
-    </button>
+    ></div>
   );
 }
