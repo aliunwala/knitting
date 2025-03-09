@@ -35,7 +35,7 @@ export default function Board() {
     const newCell = { ...board[row][col], color: cellColor };
     setBoard((state) => modify2DArray(state, row, col, newCell));
   }
-  function handleColorAllCellsToOneColor(e) {
+  function handleColorAllCellsToOneColor(e: any) {
     // setFillColor(e.target.value);
     setBoard((state) => initalBoardState(rowLen, rowNum, fillColor));
   }
