@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 import {
   copyTextToClipboard,
   downloadText,
+  initalBoardState,
   modify2DArray,
 } from "../utils/helperFunctions";
 import ColorSelect from "./select";
-
 export default function Board() {
   const colorsEnum = {
     White: "#FFFFFF",
@@ -21,20 +21,13 @@ export default function Board() {
   const [stichesPerInch, setStichesPerInch] = useState(5);
   const [rowsPerInch, setRowsPerInch] = useState(10);
   const [projectWidth, setProjectWidth] = useState(2);
-  const [projectHeight, setProjectHeight] = useState(2);
+  const [projectHeight, setProjectHeight] = useState(4);
   const [fillColor, setFillColor] = useState("#FFFFFF");
   const [cellColor, setCellColor] = useState("#FFFFFF");
   const [userSavedBoardState, setUserSavedBoardState] = useState("");
   const rowLen = stichesPerInch * projectWidth;
   const rowNum = rowsPerInch * projectHeight;
 
-  function initalBoardState(rowLen: number, rowNum: number, color = "#FFFFFF") {
-    const boardState: Array<{ color: string }>[] = []; //Array(rowNum).fill(Array(rowLen).fill("x"));
-    for (let i = 0; i < rowNum; i++) {
-      boardState.push(new Array(rowLen).fill({ color: color }));
-    }
-    return boardState;
-  }
   const [board, setBoard] = useState(initalBoardState(rowLen, rowNum));
 
   useEffect(() => {
@@ -78,9 +71,6 @@ export default function Board() {
       ></input>
       <br></br>
       <br></br>
-      {/* <hr></hr>
-      <br></br>
-      <br></br> */}
       <label htmlFor="ProjectWidth">Project Width (left-right inches):</label>
       <input
         type="number"
@@ -107,7 +97,11 @@ export default function Board() {
         className="outline-solid outline outline-blue-500 h-10"
       ></input>
       <br></br>
-      <div>{`${rowNum} cells high x ${rowLen} cells wide`}</div>
+      <br></br>
+      <br></br>
+      <div className="flex items-center justify-center">
+        <div className="border-blue-500 border p-2">{`${rowNum} cells high x ${rowLen} cells wide`}</div>
+      </div>
       <br></br>
       <br></br>
       <hr></hr>
@@ -148,6 +142,8 @@ export default function Board() {
                   row={row}
                   col={col}
                   cellColor={board[row][col].color}
+                  projectWidth={projectWidth}
+                  projectHeight={projectHeight}
                   handleCellClick={(e) => handleCellClick(e, row, col)}
                 ></Cell>
               );

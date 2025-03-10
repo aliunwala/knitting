@@ -67,3 +67,15 @@ export function downloadText(
   a.download = fileName;
   a.click();
 }
+
+export function initalBoardState(
+  rowLen: number,
+  rowNum: number,
+  color = "#FFFFFF"
+) {
+  const boardState: Array<{ color: string }>[] = []; //Array(rowNum).fill(Array(rowLen).fill("x"));
+  for (let i = 0; i < rowNum; i++) {
+    boardState.push(new Array(rowLen).fill({ color: color }));
+  }
+  return boardState;
+}
