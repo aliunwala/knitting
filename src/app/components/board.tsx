@@ -1,7 +1,7 @@
 "use client";
 // import { on } from "events";
 import Cell from "./cell";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   copyTextToClipboard,
   downloadText,
@@ -11,17 +11,23 @@ import ColorSelect from "./select";
 
 export default function Board() {
   const colorsEnum = {
+    White: "#FFFFFF",
     Red: "#FF0000",
     Blue: "#4169E1",
     Green: "#00FF00",
     Orange: "#FFA500",
     Purple: "#9F2B68",
   };
-  const [fillColor, setFillColor] = useState("#FF0000");
-  const [cellColor, setCellColor] = useState("#FF0000");
+  const [stichesPerInch, setStichesPerInch] = useState(5);
+  const [rowsPerInch, setRowsPerInch] = useState(10);
+  const [projectWidth, setProjectWidth] = useState(2);
+  const [projectHeight, setProjectHeight] = useState(2);
+  const [fillColor, setFillColor] = useState("#FFFFFF");
+  const [cellColor, setCellColor] = useState("#FFFFFF");
   const [userSavedBoardState, setUserSavedBoardState] = useState("");
-  const [rowLen, setRowLen] = useState(10);
-  const [rowNum, setRowNum] = useState(10);
+  const rowLen = stichesPerInch * projectWidth;
+  const rowNum = rowsPerInch * projectHeight;
+
   function initalBoardState(rowLen: number, rowNum: number, color = "#FFFFFF") {
     const boardState: Array<{ color: string }>[] = []; //Array(rowNum).fill(Array(rowLen).fill("x"));
     for (let i = 0; i < rowNum; i++) {
@@ -30,6 +36,13 @@ export default function Board() {
     return boardState;
   }
   const [board, setBoard] = useState(initalBoardState(rowLen, rowNum));
+
+  useEffect(() => {
+    console.log("Setting initial board state");
+    if (board.length !== rowNum || board[0].length !== rowLen) {
+      setBoard(initalBoardState(rowLen, rowNum));
+    }
+  }, [rowLen, rowNum, board]);
 
   function handleCellClick(e: any, row: number, col: number) {
     const newCell = { ...board[row][col], color: cellColor };
@@ -42,6 +55,63 @@ export default function Board() {
 
   return (
     <>
+      <label htmlFor="StitchesPerInch">Sitches Per inch (left-right):</label>
+      <input
+        type="number"
+        id="StitchesPerInch"
+        name="StitchesPerInch"
+        min="1"
+        value={stichesPerInch}
+        onChange={(e) => setStichesPerInch(Number(e.target.value))}
+        className="outline-solid outline outline-blue-500 h-10"
+      ></input>
+
+      <label htmlFor="RowsPerInch">Rows Per inch (up-down):</label>
+      <input
+        type="number"
+        id="RowsPerInch"
+        name="RowsPerInch"
+        min="1"
+        value={rowsPerInch}
+        onChange={(e) => setRowsPerInch(Number(e.target.value))}
+        className="outline-solid outline outline-blue-500 h-10"
+      ></input>
+      <br></br>
+      <br></br>
+      {/* <hr></hr>
+      <br></br>
+      <br></br> */}
+      <label htmlFor="ProjectWidth">Project Width (left-right inches):</label>
+      <input
+        type="number"
+        id="ProjectWidth"
+        name="ProjectWidth"
+        min="1"
+        value={projectWidth}
+        onChange={(e) => {
+          setProjectWidth(Number(e.target.value));
+        }}
+        className="outline-solid outline outline-blue-500 h-10"
+      ></input>
+
+      <label htmlFor="ProjectHeight">Project Height (up-down inches):</label>
+      <input
+        type="number"
+        id="ProjectHeight"
+        name="ProjectHeight"
+        min="1"
+        value={projectHeight}
+        onChange={(e) => {
+          setProjectHeight(Number(e.target.value));
+        }}
+        className="outline-solid outline outline-blue-500 h-10"
+      ></input>
+      <br></br>
+      <div>{`${rowNum} cells high x ${rowLen} cells wide`}</div>
+      <br></br>
+      <br></br>
+      <hr></hr>
+      <br></br>
       <br></br>
       <ColorSelect
         label={"Choose a color to fill all cells:"}
@@ -93,23 +163,16 @@ export default function Board() {
           let JSONuserSavedBoardStateTEMP: any;
           try {
             const JSONuserSavedBoardState = JSON.parse(userSavedBoardState);
-            if (JSONuserSavedBoardState.length != rowNum) {
-              throw new Error("Not enoungh rows in data");
-            }
-            if (JSONuserSavedBoardState[0].length != rowLen) {
-              throw new Error("Not enoungh left to right cells in data");
-            }
             JSONuserSavedBoardStateTEMP = JSONuserSavedBoardState;
             // return JSONuserSavedBoardState;
           } catch (e) {
             console.log("Error when updating board state: " + e);
           }
-
-          if (JSONuserSavedBoardStateTEMP) {
-            setBoard((state) => {
-              return JSONuserSavedBoardStateTEMP;
-            });
-          }
+          setStichesPerInch(JSONuserSavedBoardStateTEMP.stichesPerInch);
+          setRowsPerInch(JSONuserSavedBoardStateTEMP.rowsPerInch);
+          setProjectHeight(JSONuserSavedBoardStateTEMP.projectHeight);
+          setProjectWidth(JSONuserSavedBoardStateTEMP.projectWidth);
+          setBoard(JSONuserSavedBoardStateTEMP.board);
         }}
       >
         <label htmlFor="boardState">Saved board state:</label>
@@ -137,7 +200,15 @@ export default function Board() {
       <br></br>
       <button
         onClick={() => {
-          const boardStateToPrint = String(JSON.stringify(board));
+          const boardStateToPrint = String(
+            JSON.stringify({
+              board,
+              stichesPerInch,
+              rowsPerInch,
+              projectHeight,
+              projectWidth,
+            })
+          );
           console.log(boardStateToPrint);
           copyTextToClipboard(boardStateToPrint);
         }}
@@ -148,7 +219,15 @@ export default function Board() {
       </button>
       <button
         onClick={() => {
-          const boardStateToPrint = String(JSON.stringify(board));
+          const boardStateToPrint = String(
+            JSON.stringify({
+              board,
+              stichesPerInch,
+              rowsPerInch,
+              projectHeight,
+              projectWidth,
+            })
+          );
           console.log(boardStateToPrint);
           copyTextToClipboard(boardStateToPrint);
           downloadText(
