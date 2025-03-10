@@ -100,7 +100,7 @@ export default function Board() {
       <br></br>
       <br></br>
       <div className="flex items-center justify-center">
-        <div className="border-blue-500 border p-2">{`${rowNum} cells high x ${rowLen} cells wide`}</div>
+        <div className="border-blue-500 border p-2">{`${rowLen} cells wide ↔️ x ${rowNum} cells high ↕️`}</div>
       </div>
       <br></br>
       <br></br>

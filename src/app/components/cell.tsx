@@ -35,8 +35,8 @@ export default function Cell({
       className="cell"
       style={{
         background: cellColor,
-        height: `${cellHeight}px`,
-        width: `${cellWidth}px`,
+        minHeight: `${cellHeight}px`,
+        minWidth: `${cellWidth}px`,
       }}
       onClick={handleCellClick}
       // onMouseOver={onMouseOverHandler}
