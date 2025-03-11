@@ -79,3 +79,43 @@ export function initalBoardState(
   }
   return boardState;
 }
+
+export function cellDimensions(
+  projectWidth: number,
+  projectHeight: number,
+  numberOfCellsWide: number,
+  numberOfRowsTall: number,
+  defaultCellWidth: number,
+  defaultCellHeight: number
+) {
+  let cellWidth = defaultCellWidth;
+  let cellHeight = defaultCellHeight;
+  if (projectHeight === projectWidth) {
+    if (numberOfCellsWide > numberOfRowsTall) {
+      //We are too wide try to make square with height
+      const currentHeight = cellHeight * numberOfRowsTall;
+      cellWidth = currentHeight / numberOfCellsWide;
+      // cellWidth = Math.floor(cellWidth * (projectWidth / projectHeight));
+    }
+    if (numberOfRowsTall > numberOfCellsWide) {
+      // Too tall try to make square with width
+      const currentWidth = cellWidth * numberOfCellsWide;
+      cellHeight = currentWidth / numberOfRowsTall;
+    }
+  }
+
+  if (projectHeight > projectWidth) {
+    const maxLength = cellHeight * numberOfCellsWide;
+    cellHeight =
+      (projectHeight / projectWidth) * (maxLength / numberOfRowsTall);
+    // console.log({ maxLength, cellWidth });
+  }
+
+  if (projectWidth > projectHeight) {
+    const maxLength = cellWidth * numberOfCellsWide;
+    cellHeight =
+      (maxLength / numberOfRowsTall) * (projectHeight / projectWidth);
+    // console.log({ maxLength, cellWidth });
+  }
+  return { cellWidth, cellHeight };
+}

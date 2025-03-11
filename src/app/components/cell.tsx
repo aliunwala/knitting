@@ -1,36 +1,37 @@
+import React from "react";
 import { MouseEventHandler } from "react";
 
 type CellProps = {
-  handleCellClick?: MouseEventHandler<HTMLElement>;
+  // handleCellClick?: MouseEventHandler<HTMLElement>;
+  handleCellClick: (row: number, col: number) => void;
   children?: any;
-  row?: number;
-  col?: number;
+  row: number;
+  col: number;
   cellColor?: string;
-  projectWidth: number;
-  projectHeight: number;
+  // projectWidth: number;
+  // projectHeight: number;
+  // numberOfCellsWide: number;
+  // numberOfRowsTall: number;
+  isBorderCell?: boolean;
+  cellHeight: number;
+  cellWidth: number;
 };
 
-export default function Cell({
+function MyCell({
   children,
+  cellColor,
+  isBorderCell = false,
+  cellHeight,
+  cellWidth,
   row,
   col,
-  cellColor,
-  projectWidth,
-  projectHeight,
   handleCellClick,
 }: CellProps) {
   // function onMouseOverHandler() {
   //   console.log("onMouseOverHandler");
   // }
-  let cellWidth = 34;
-  let cellHeight = 34;
-  if (projectHeight > projectWidth) {
-    cellWidth = Math.floor(cellWidth * (projectWidth / projectHeight));
-  }
-  if (projectWidth > projectHeight) {
-    cellHeight = Math.floor(cellHeight * (projectHeight / projectWidth));
-  }
-  return (
+
+  const boardCell = (
     <div
       className="cell"
       style={{
@@ -38,8 +39,29 @@ export default function Cell({
         minHeight: `${cellHeight}px`,
         minWidth: `${cellWidth}px`,
       }}
-      onClick={handleCellClick}
+      onClick={(e) => handleCellClick(row, col)}
       // onMouseOver={onMouseOverHandler}
-    ></div>
+    >
+      {children}
+    </div>
   );
+
+  const borderCell = (
+    <div
+      className="cell"
+      style={{
+        minHeight: `${cellHeight}px`,
+        minWidth: `${cellWidth}px`,
+        maxHeight: `${cellHeight}px`,
+        maxWidth: `${cellWidth}px`,
+      }}
+    >
+      {children}
+    </div>
+  );
+
+  return <>{isBorderCell ? borderCell : boardCell}</>;
 }
+const Cell = React.memo(MyCell);
+
+export default Cell;

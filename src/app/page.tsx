@@ -1,15 +1,78 @@
 // import Image from "next/image";
 // import Game from "@/app/components/tickTackToe";
 // import Cell from "@/app/components/cell";
+"use client";
+import { useState, useCallback } from "react";
 import Board from "./components/board";
+import Column from "./components/column";
 export default function Home() {
   return (
     <>
-      <div className="ml-8 mr-8 mt-8">
+      <div className="m-8">
+        {/* <App></App> */}
         <Board></Board>
       </div>
     </>
   );
+
+  function App() {
+    const data = [
+      {
+        name: "lebron",
+        age: 36,
+        team: "lakers",
+      },
+      {
+        name: "chris",
+        age: 36,
+        team: "suns",
+      },
+      {
+        name: "james",
+        age: 32,
+        team: "nets",
+      },
+      {
+        name: "lebron1",
+        age: 36,
+        team: "lakers1",
+      },
+      {
+        name: "chris1",
+        age: 36,
+        team: "suns1",
+      },
+      {
+        name: "james1",
+        age: 32,
+        team: "nets1",
+      },
+    ];
+    const [players, setPlayers] = useState(data);
+    const handleClick = useCallback((deleted: any) => {
+      console.log(deleted);
+      setPlayers((prevState) =>
+        prevState.filter((player) => player.name !== deleted.name)
+      );
+    }, []);
+
+    return (
+      <>
+        <table>
+          <tr>
+            <td>name</td>
+            <td>age</td>
+            <td>team</td>
+          </tr>
+          {players.map((p) => (
+            <Column key={p.name} player={p} onClick={handleClick} />
+          ))}
+        </table>
+        {/* This button makes no sense */}
+        {/* <button onClick={() => handleClick(players[0])}>Delete</button> */}
+      </>
+    );
+  }
 
   // <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
   //   <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">

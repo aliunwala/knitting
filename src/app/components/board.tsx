@@ -1,15 +1,23 @@
 "use client";
 // import { on } from "events";
 import Cell from "./cell";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   copyTextToClipboard,
   downloadText,
   initalBoardState,
   modify2DArray,
+  cellDimensions,
 } from "../utils/helperFunctions";
 import ColorSelect from "./select";
+import BoardBorderTopBottom from "./boardBorderTopBottom";
+import BoardBorderSide from "./boardBorderSide";
+import BoardCenter from "./boardCenter";
+
 export default function Board() {
+  /**
+   * Constants
+   */
   const colorsEnum = {
     White: "#FFFFFF",
     Red: "#FF0000",
@@ -18,44 +26,82 @@ export default function Board() {
     Orange: "#FFA500",
     Purple: "#9F2B68",
   };
+  const defaultCellWidth = 34;
+  const defaultCellHeight = 34;
+  /**
+   * State & Derived State
+   */
   const [stichesPerInch, setStichesPerInch] = useState(5);
   const [rowsPerInch, setRowsPerInch] = useState(10);
-  const [projectWidth, setProjectWidth] = useState(2);
-  const [projectHeight, setProjectHeight] = useState(4);
+  const [projectWidth, setProjectWidth] = useState(1);
+  const [projectHeight, setProjectHeight] = useState(1);
   const [fillColor, setFillColor] = useState("#FFFFFF");
   const [cellColor, setCellColor] = useState("#FFFFFF");
   const [userSavedBoardState, setUserSavedBoardState] = useState("");
-  const rowLen = stichesPerInch * projectWidth;
-  const rowNum = rowsPerInch * projectHeight;
+  const numberOfCellsWide = stichesPerInch * projectWidth;
+  const numberOfCellsTall = rowsPerInch * projectHeight;
+  const { cellHeight, cellWidth } = cellDimensions(
+    projectWidth,
+    projectHeight,
+    numberOfCellsWide,
+    numberOfCellsTall,
+    defaultCellWidth,
+    defaultCellHeight
+  );
+  const [board, setBoard] = useState(
+    initalBoardState(numberOfCellsWide, numberOfCellsTall)
+  );
 
-  const [board, setBoard] = useState(initalBoardState(rowLen, rowNum));
-
+  /**
+   * Effects
+   */
   useEffect(() => {
     console.log("Setting initial board state");
-    if (board.length !== rowNum || board[0].length !== rowLen) {
-      setBoard(initalBoardState(rowLen, rowNum));
+    if (
+      board.length !== numberOfCellsTall ||
+      board[0].length !== numberOfCellsWide
+    ) {
+      setBoard(initalBoardState(numberOfCellsWide, numberOfCellsTall));
     }
-  }, [rowLen, rowNum, board]);
+  }, [numberOfCellsWide, numberOfCellsTall, board]);
 
-  function handleCellClick(e: any, row: number, col: number) {
-    const newCell = { ...board[row][col], color: cellColor };
-    setBoard((state) => modify2DArray(state, row, col, newCell));
-  }
+  /**
+   * Handlers
+   */
+  const handleCellClick = useCallback(
+    (row: number, col: number) => {
+      const newCell = { color: cellColor };
+      setBoard((state) => modify2DArray(state, row, col, newCell));
+    },
+    [cellColor]
+  );
+  //   function handleCellClick(e: any, row: number, col: number) {
+  //     const newCell = { ...board[row][col], color: cellColor };
+  //     setBoard((state) => modify2DArray(state, row, col, newCell));
+  //   }
   function handleColorAllCellsToOneColor(e: any) {
     // setFillColor(e.target.value);
-    setBoard((state) => initalBoardState(rowLen, rowNum, fillColor));
+    setBoard((state) =>
+      initalBoardState(numberOfCellsWide, numberOfCellsTall, fillColor)
+    );
   }
 
   return (
     <>
+      {/**
+       * User inputs
+       */}
       <label htmlFor="StitchesPerInch">Sitches Per inch (left-right):</label>
       <input
         type="number"
         id="StitchesPerInch"
         name="StitchesPerInch"
-        min="1"
         value={stichesPerInch}
-        onChange={(e) => setStichesPerInch(Number(e.target.value))}
+        onChange={(e) => {
+          if (Number(e.target.value) >= 1 && Number(e.target.value) <= 25) {
+            setStichesPerInch(Number(e.target.value));
+          }
+        }}
         className="outline-solid outline outline-blue-500 h-10"
       ></input>
 
@@ -64,9 +110,12 @@ export default function Board() {
         type="number"
         id="RowsPerInch"
         name="RowsPerInch"
-        min="1"
         value={rowsPerInch}
-        onChange={(e) => setRowsPerInch(Number(e.target.value))}
+        onChange={(e) => {
+          if (Number(e.target.value) >= 1 && Number(e.target.value) <= 25) {
+            setRowsPerInch(Number(e.target.value));
+          }
+        }}
         className="outline-solid outline outline-blue-500 h-10"
       ></input>
       <br></br>
@@ -99,14 +148,20 @@ export default function Board() {
       <br></br>
       <br></br>
       <br></br>
+      {/**
+       * Display the cell calculations based on user inputs
+       */}
       <div className="flex items-center justify-center">
-        <div className="border-blue-500 border p-2">{`${rowLen} cells wide ↔️ x ${rowNum} cells high ↕️`}</div>
+        <div className="border-blue-500 border p-2">{`${numberOfCellsWide} cells wide ↔️ x ${numberOfCellsTall} cells high ↕️`}</div>
       </div>
       <br></br>
       <br></br>
       <hr></hr>
       <br></br>
       <br></br>
+      {/**
+       * Cell painting options
+       */}
       <ColorSelect
         label={"Choose a color to fill all cells:"}
         cellColor={fillColor}
@@ -132,27 +187,49 @@ export default function Board() {
 
       <br></br>
       <br></br>
-      {board.map((rowArr: Array<any>, row, arr) => {
-        return (
-          <div key={row + "divforcells"} className="flex">
-            {rowArr.map((cellVal: any, col) => {
-              return (
-                <Cell
-                  key={row + "_" + col}
-                  row={row}
-                  col={col}
-                  cellColor={board[row][col].color}
-                  projectWidth={projectWidth}
-                  projectHeight={projectHeight}
-                  handleCellClick={(e) => handleCellClick(e, row, col)}
-                ></Cell>
-              );
-            })}
-          </div>
-        );
-      })}
+      {/**
+       * Actual board with cells
+       */}
+      <BoardBorderTopBottom
+        numberOfCellsWide={numberOfCellsWide}
+        cellWidth={cellWidth}
+        defaultCellHeight={defaultCellHeight}
+      ></BoardBorderTopBottom>
+      <div className="flex">
+        <div>
+          <BoardBorderSide
+            numberOfCellsTall={numberOfCellsTall}
+            cellHeight={cellHeight}
+            cellWidth={cellWidth}
+          ></BoardBorderSide>
+        </div>
+        <div>
+          <BoardCenter
+            board={board}
+            cellWidth={cellWidth}
+            cellHeight={cellHeight}
+            handleCellClick={handleCellClick}
+          ></BoardCenter>
+        </div>
+        <div>
+          {" "}
+          <BoardBorderSide
+            numberOfCellsTall={numberOfCellsTall}
+            cellHeight={cellHeight}
+            cellWidth={cellWidth}
+          ></BoardBorderSide>
+        </div>
+      </div>
+      <BoardBorderTopBottom
+        numberOfCellsWide={numberOfCellsWide}
+        cellWidth={cellWidth}
+        defaultCellHeight={defaultCellHeight}
+      ></BoardBorderTopBottom>
       <br></br>
 
+      {/**
+       * Update the board with saved state
+       */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -194,6 +271,9 @@ export default function Board() {
       </form>
 
       <br></br>
+      {/**
+       * Copy state to clipboard
+       */}
       <button
         onClick={() => {
           const boardStateToPrint = String(
@@ -213,6 +293,10 @@ export default function Board() {
       >
         Copy state to clipboard
       </button>
+
+      {/**
+       * Download state to file
+       */}
       <button
         onClick={() => {
           const boardStateToPrint = String(
