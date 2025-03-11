@@ -34,6 +34,7 @@ export default function BoardBorderTopBottom({
               isBorderCell={true}
               row={0}
               col={0}
+              handleCellClick={() => {}}
             >
               {res}
             </Cell>

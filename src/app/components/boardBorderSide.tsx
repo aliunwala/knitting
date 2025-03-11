@@ -23,6 +23,7 @@ export default function BoardBorderSide({
               isBorderCell={true}
               row={0}
               col={0}
+              handleCellClick={() => {}}
             >
               {numberOfCellsTall - idx}
             </Cell>
