@@ -32,6 +32,8 @@ export default function BoardBorderTopBottom({
               cellHeight={defaultCellHeight}
               cellWidth={cellWidth}
               isBorderCell={true}
+              row={0}
+              col={0}
             >
               {res}
             </Cell>

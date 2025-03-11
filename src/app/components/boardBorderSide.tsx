@@ -21,6 +21,8 @@ export default function BoardBorderSide({
               cellHeight={cellHeight}
               cellWidth={cellWidth}
               isBorderCell={true}
+              row={0}
+              col={0}
             >
               {numberOfCellsTall - idx}
             </Cell>
