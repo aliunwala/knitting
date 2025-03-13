@@ -1,13 +1,14 @@
 "use client";
 // import { on } from "events";
 import Cell from "./cell";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   copyTextToClipboard,
   downloadText,
   initalBoardState,
   modify2DArray,
   cellDimensions,
+  isInRange,
 } from "../utils/helperFunctions";
 import ColorSelect from "./select";
 import BoardBorderTopBottom from "./boardBorderTopBottom";
@@ -32,7 +33,7 @@ export default function Board() {
   const defaultCellHeight = 34;
 
   /**
-   * State & Derived State
+   * State & Derived State & refs
    */
   const [stichesPerInch, setStichesPerInch] = useState(5);
   const [rowsPerInch, setRowsPerInch] = useState(10);
@@ -53,6 +54,10 @@ export default function Board() {
     defaultCellWidth,
     defaultCellHeight
   );
+  // Tracking if mouse is pressed
+  const isDrawingRef = useRef(false);
+  // Tracking if we're in erase mode
+  const isErasingRef = useRef(false);
   const [board, setBoard] = useState(
     initalBoardState(numberOfCellsWide, numberOfCellsTall)
   );
@@ -61,12 +66,19 @@ export default function Board() {
    * Effects
    */
   useEffect(() => {
-    console.log("Setting initial board state");
-    if (
-      board.length !== numberOfCellsTall ||
-      board[0].length !== numberOfCellsWide
-    ) {
-      setBoard(initalBoardState(numberOfCellsWide, numberOfCellsTall));
+    if (board && board[0]) {
+      if (
+        board.length !== numberOfCellsTall ||
+        board[0].length !== numberOfCellsWide
+      ) {
+        console.log("Setting initial board state");
+        setBoard((state) =>
+          initalBoardState(
+            isInRange(numberOfCellsWide, 1, 300),
+            isInRange(numberOfCellsTall, 1, 300)
+          )
+        );
+      }
     }
   }, [numberOfCellsWide, numberOfCellsTall, board]);
 
@@ -95,6 +107,60 @@ export default function Board() {
     setCurrentColor(customColor);
   };
 
+  // Handle mouse down on a cell
+  const handleMouseDown = useCallback(
+    (row: number, col: number) => {
+      isDrawingRef.current = true;
+      // Check if the cell already has this color to determine if we're erasing
+      isErasingRef.current = board[row][col].color === currentColor;
+
+      if (isErasingRef.current) {
+        const newCell = { color: "#FFFFFF" };
+        setBoard((state) => modify2DArray(state, row, col, newCell));
+      } else {
+        const newCell = { color: currentColor };
+        setBoard((state) => modify2DArray(state, row, col, newCell));
+      }
+    },
+    [currentColor, board]
+  );
+
+  // Handle mouse enter on a cell (for dragging)
+  const handleMouseEnter = useCallback(
+    (row: number, col: number) => {
+      if (!isDrawingRef.current) return;
+
+      if (isErasingRef.current) {
+        const newCell = { color: "#FFFFFF" };
+        setBoard((state) => modify2DArray(state, row, col, newCell));
+      } else {
+        const newCell = { color: currentColor };
+        setBoard((state) => modify2DArray(state, row, col, newCell));
+      }
+    },
+    [currentColor]
+  );
+
+  // Handle mouse up
+  const handleMouseUp = useCallback(() => {
+    isDrawingRef.current = false;
+  }, []);
+
+  // Handle mouse up on the entire document
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      isDrawingRef.current = false;
+    };
+
+    document.addEventListener("mouseup", handleGlobalMouseUp);
+    document.addEventListener("touchend", handleGlobalMouseUp);
+
+    return () => {
+      document.removeEventListener("mouseup", handleGlobalMouseUp);
+      document.removeEventListener("touchend", handleGlobalMouseUp);
+    };
+  }, []);
+
   return (
     <>
       <div className="max-w-5xl mx-auto p-4">
@@ -114,12 +180,7 @@ export default function Board() {
               name="StitchesPerInch"
               value={stichesPerInch}
               onChange={(e) => {
-                if (
-                  Number(e.target.value) >= 1 &&
-                  Number(e.target.value) <= 25
-                ) {
-                  setStichesPerInch(Number(e.target.value));
-                }
+                setStichesPerInch(isInRange(Number(e.target.value), 1, 25));
               }}
               className="outline-solid outline outline-blue-500"
             ></input>
@@ -134,12 +195,7 @@ export default function Board() {
               name="RowsPerInch"
               value={rowsPerInch}
               onChange={(e) => {
-                if (
-                  Number(e.target.value) >= 1 &&
-                  Number(e.target.value) <= 25
-                ) {
-                  setRowsPerInch(Number(e.target.value));
-                }
+                setRowsPerInch(isInRange(Number(e.target.value), 1, 25));
               }}
               className="outline-solid outline outline-blue-500"
             ></input>
@@ -155,11 +211,12 @@ export default function Board() {
               type="number"
               id="ProjectWidth"
               name="ProjectWidth"
-              min="1"
+              min={1}
+              max={25}
               value={projectWidth}
-              onChange={(e) => {
-                setProjectWidth(Number(e.target.value));
-              }}
+              onChange={(e) =>
+                setProjectWidth(isInRange(Number(e.target.value), 1, 25))
+              }
               className="outline-solid outline outline-blue-500"
             ></input>
           </div>
@@ -171,11 +228,12 @@ export default function Board() {
               type="number"
               id="ProjectHeight"
               name="ProjectHeight"
-              min="1"
+              min={1}
+              max={25}
               value={projectHeight}
-              onChange={(e) => {
-                setProjectHeight(Number(e.target.value));
-              }}
+              onChange={(e) =>
+                setProjectHeight(isInRange(Number(e.target.value), 1, 25))
+              }
               className="outline-solid outline outline-blue-500"
             ></input>
           </div>
@@ -191,7 +249,7 @@ export default function Board() {
 
         <div className="sectionDivider">
           <div className="flex">
-            <div className="flex flex-col">
+            <div className="flex flex-col bg-gray-300 p-4">
               <h2 className="text-lg font-medium mb-2">Color Selection</h2>
               <div className="flex flex-wrap gap-2 mb-4">
                 {colorsEnum.map((color, index) => (
@@ -210,7 +268,7 @@ export default function Board() {
               </div>
             </div>
 
-            <div className="flex flex-col">
+            <div className="flex flex-col  bg-gray-300 p-4">
               <h2 className="text-lg font-medium mb-2">
                 Custom Color Selection
               </h2>
@@ -220,12 +278,6 @@ export default function Board() {
                   value={customColor}
                   onChange={handleCustomColorChange}
                   className="w-8 h-8 rounded-md"
-                  // className={`w-8 h-8 rounded-md ${
-                  //   currentColor === color
-                  //     ? "ring-2 ring-offset-2 ring-black"
-                  //     : ""
-                  // }`}
-
                   aria-label="Choose custom color"
                 />
                 <button
@@ -242,7 +294,11 @@ export default function Board() {
         <div className="sectionDivider">
           <div className="flex items-center gap-3 mb-2">
             <div className="ml-4 flex items-center">
-              <span className="mr-2">Current:</span>
+              <span className="mr-2">
+                <h2 className="text-2xl font-medium">
+                  Currently selected color:
+                </h2>
+              </span>
               <div
                 className="w-6 h-6 rounded border border-gray-300"
                 style={{ backgroundColor: currentColor }}
@@ -273,6 +329,9 @@ export default function Board() {
                 cellWidth={cellWidth}
                 cellHeight={cellHeight}
                 handleCellClick={handleCellClick}
+                onMouseDown={handleMouseDown}
+                onMouseEnter={handleMouseEnter}
+                onMouseUp={handleMouseUp}
               ></BoardCenter>
             </div>
             <div>
@@ -289,6 +348,12 @@ export default function Board() {
             cellWidth={cellWidth}
             defaultCellHeight={defaultCellHeight}
           ></BoardBorderTopBottom>
+        </div>
+        <div className="sectionDivider">
+          <h2>
+            To quckly erase cells, click on a with the same color you have
+            selected, then drag the cursor.
+          </h2>
         </div>
 
         <div className="sectionDivider">

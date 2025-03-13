@@ -1,3 +1,4 @@
+import BoardCell from "./boardCell";
 import Cell from "./cell";
 
 type BoardCenterProps = {
@@ -5,6 +6,9 @@ type BoardCenterProps = {
   cellWidth: number;
   cellHeight: number;
   handleCellClick: (row: number, col: number) => void;
+  onMouseDown: Function;
+  onMouseEnter: Function;
+  onMouseUp: Function;
 };
 
 export default function BoardCenter({
@@ -12,13 +16,16 @@ export default function BoardCenter({
   cellWidth,
   cellHeight,
   handleCellClick,
+  onMouseDown,
+  onMouseEnter,
+  onMouseUp,
 }: BoardCenterProps) {
   const boardCellsResult = board.map((rowArr: Array<any>, row, arr) => {
     return (
       <div key={row + "divforcells"} className="flex">
         {rowArr.map((cellVal: any, col) => {
           return (
-            <Cell
+            <BoardCell
               key={row + "_" + col + "_boardCell"}
               //   cellColor={"#ff0000"}
               cellColor={cellVal.color}
@@ -26,8 +33,11 @@ export default function BoardCenter({
               cellWidth={cellWidth}
               row={row}
               col={col}
+              onMouseDown={onMouseDown}
+              onMouseEnter={onMouseEnter}
+              onMouseUp={onMouseUp}
               handleCellClick={handleCellClick}
-            ></Cell>
+            ></BoardCell>
           );
         })}
       </div>
