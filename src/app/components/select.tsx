@@ -20,7 +20,9 @@ export default function ColorSelect({
         id="color-select"
         className="bg-transparent hover:bg-blue-50 font-semibold hover:text-black py-2 px-4 border border-blue-500 hover:border-transparent rounded"
       >
-        <option value="">Please choose color option:</option>
+        <option className="text-lg font-medium mb-2" value="">
+          Please choose color option:
+        </option>
         {Object.entries(colorsEnum).map((elem, idx, arr) => {
           return (
             <option

@@ -16,6 +16,9 @@
 .button{
   border: 1px solid black;
 }
+.sectionDivider{
+ margin-bottom: 1rem;
+}
 
 /* Tick Tack Toe stuff */
 /* .square {
