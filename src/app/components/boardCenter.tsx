@@ -9,6 +9,8 @@ type BoardCenterProps = {
   onMouseDown: Function;
   onMouseEnter: Function;
   onMouseUp: Function;
+  activeRow?: number;
+  knittingMode: boolean;
 };
 
 export default function BoardCenter({
@@ -19,10 +21,21 @@ export default function BoardCenter({
   onMouseDown,
   onMouseEnter,
   onMouseUp,
+  activeRow,
+  knittingMode,
 }: BoardCenterProps) {
   const boardCellsResult = board.map((rowArr: Array<any>, row, arr) => {
     return (
-      <div key={row + "divforcells"} className="flex">
+      <div
+        key={row + "divforcells"}
+        className={`flex ${
+          knittingMode &&
+          activeRow &&
+          Math.abs(board.length - activeRow) !== row
+            ? "inactiveRow"
+            : ""
+        }`}
+      >
         {rowArr.map((cellVal: any, col) => {
           return (
             <BoardCell

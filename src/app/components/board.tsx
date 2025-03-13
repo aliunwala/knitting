@@ -39,6 +39,8 @@ export default function Board() {
   const [rowsPerInch, setRowsPerInch] = useState(10);
   const [projectWidth, setProjectWidth] = useState(1);
   const [projectHeight, setProjectHeight] = useState(1);
+  const [activeRow, setActiveRow] = useState(1);
+  const [knittingMode, setKnittingMode] = useState(false);
   // Custom color input
   const [customColor, setCustomColor] = useState("#000000");
   // const [fillColor, setFillColor] = useState(colorsEnum[0]);
@@ -248,8 +250,8 @@ export default function Board() {
         </div>
 
         <div className="sectionDivider">
-          <div className="flex">
-            <div className="flex flex-col bg-gray-300 p-4">
+          <div className="flex gap-12">
+            <div className="flex flex-col bg-gray-300 ">
               <h2 className="text-lg font-medium mb-2">Color Selection</h2>
               <div className="flex flex-wrap gap-2 mb-4">
                 {colorsEnum.map((color, index) => (
@@ -268,7 +270,7 @@ export default function Board() {
               </div>
             </div>
 
-            <div className="flex flex-col  bg-gray-300 p-4">
+            <div className="flex flex-col  bg-gray-300 ">
               <h2 className="text-lg font-medium mb-2">
                 Custom Color Selection
               </h2>
@@ -289,6 +291,48 @@ export default function Board() {
               </div>
             </div>
           </div>
+        </div>
+        {/**
+         * Cell painting options
+         */}
+        <div className="sectionDivider flex gap-2">
+          <button
+            onClick={(e) => {
+              if (
+                confirm(
+                  `Are you sure you want to color all the cells to ${currentColor}? this cannot be undone.`
+                )
+              ) {
+                handleColorAllCellsToOneColor(e);
+              }
+            }}
+            type="button"
+            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
+          >
+            Click to color all cells
+          </button>
+
+          <button
+            onClick={(e) => {
+              if (
+                confirm(
+                  `Are you sure you want to reset the cells to all be white? this cannot be undone.`
+                )
+              ) {
+                setBoard((state) =>
+                  initalBoardState(
+                    numberOfCellsWide,
+                    numberOfCellsTall,
+                    "#FFFFFF"
+                  )
+                );
+              }
+            }}
+            type="button"
+            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
+          >
+            Click to reset all cells
+          </button>
         </div>
 
         <div className="sectionDivider">
@@ -332,6 +376,8 @@ export default function Board() {
                 onMouseDown={handleMouseDown}
                 onMouseEnter={handleMouseEnter}
                 onMouseUp={handleMouseUp}
+                activeRow={activeRow}
+                knittingMode={knittingMode}
               ></BoardCenter>
             </div>
             <div>
@@ -348,6 +394,36 @@ export default function Board() {
             cellWidth={cellWidth}
             defaultCellHeight={defaultCellHeight}
           ></BoardBorderTopBottom>
+        </div>
+        <div className="sectionDivider">
+          <button
+            onClick={(e) => {
+              setKnittingMode((s) => !s);
+            }}
+            type="button"
+            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
+          >
+            Click to toggle knitting mode
+          </button>
+
+          <label
+            className="text-lg font-medium "
+            htmlFor="knittingModeActiveRow"
+          >
+            Active Row:
+          </label>
+          <input
+            type="number"
+            id="knittingModeActiveRow"
+            name="knittingModeActiveRow"
+            value={activeRow}
+            onChange={(e) => {
+              setActiveRow(
+                isInRange(Number(e.target.value), 1, numberOfCellsTall)
+              );
+            }}
+            className="outline-solid outline outline-blue-500"
+          ></input>
         </div>
         <div className="sectionDivider">
           <h2>
@@ -458,35 +534,6 @@ export default function Board() {
             className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
           >
             Download state to computer
-          </button>
-        </div>
-
-        {/**
-         * Cell painting options
-         */}
-        <div className="sectionDivider flex gap-2">
-          <button
-            onClick={(e) => handleColorAllCellsToOneColor(e)}
-            type="button"
-            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
-          >
-            Click to color all cells
-          </button>
-
-          <button
-            onClick={(e) =>
-              setBoard((state) =>
-                initalBoardState(
-                  numberOfCellsWide,
-                  numberOfCellsTall,
-                  "#FFFFFF"
-                )
-              )
-            }
-            type="button"
-            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
-          >
-            Click to reset all cells
           </button>
         </div>
       </div>
