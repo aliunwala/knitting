@@ -164,7 +164,7 @@ export default function Board() {
   return (
     <>
       <div className="max-w-5xl mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Stiching Helper</h1>
+        <h1 className="text-2xl font-bold mb-4">Knitting Helper</h1>
 
         {/**
          * User inputs
