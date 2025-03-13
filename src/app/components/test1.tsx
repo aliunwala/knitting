@@ -2,35 +2,36 @@
 import React, { useState, useCallback, memo, useRef } from "react";
 
 // Individual cell component - memoized to prevent unnecessary rerenders
-const Cell = memo(
-  ({ color, onMouseDown, onMouseEnter, onMouseUp, id }: any) => {
-    return (
-      <div
-        className="w-5 h-5 border border-gray-200"
-        style={{ backgroundColor: color || "#f3f4f6" }}
-        onMouseDown={() => onMouseDown(id)}
-        onMouseEnter={() => onMouseEnter(id)}
-        onMouseUp={() => onMouseUp()}
-        onTouchStart={() => onMouseDown(id)}
-        onTouchMove={(e) => {
-          e.preventDefault();
-          const touch = e.touches[0];
-          const element = document.elementFromPoint(
-            touch.clientX,
-            touch.clientY
-          );
-          if (element && element instanceof HTMLElement) {
-            if (element.dataset.id) {
-              onMouseEnter(parseInt(element.dataset.id));
-            }
+const Cell = memo(function Cell({
+  color,
+  onMouseDown,
+  onMouseEnter,
+  onMouseUp,
+  id,
+}: any) {
+  return (
+    <div
+      className="w-5 h-5 border border-gray-200"
+      style={{ backgroundColor: color || "#f3f4f6" }}
+      onMouseDown={() => onMouseDown(id)}
+      onMouseEnter={() => onMouseEnter(id)}
+      onMouseUp={() => onMouseUp()}
+      onTouchStart={() => onMouseDown(id)}
+      onTouchMove={(e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (element && element instanceof HTMLElement) {
+          if (element.dataset.id) {
+            onMouseEnter(parseInt(element.dataset.id));
           }
-        }}
-        onTouchEnd={() => onMouseUp()}
-        data-id={id}
-      />
-    );
-  }
-);
+        }
+      }}
+      onTouchEnd={() => onMouseUp()}
+      data-id={id}
+    />
+  );
+});
 
 // Grid component
 const Grid = () => {
