@@ -37,8 +37,8 @@ export default function Board() {
    */
   const [stichesPerInch, setStichesPerInch] = useState(5);
   const [rowsPerInch, setRowsPerInch] = useState(10);
-  const [projectWidth, setProjectWidth] = useState(1);
-  const [projectHeight, setProjectHeight] = useState(1);
+  const [projectWidth, setProjectWidth] = useState(3);
+  const [projectHeight, setProjectHeight] = useState(3);
   const [activeRow, setActiveRow] = useState(1);
   const [knittingMode, setKnittingMode] = useState(false);
   // Custom color input
