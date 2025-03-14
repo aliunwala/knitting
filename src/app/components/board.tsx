@@ -171,7 +171,8 @@ export default function Board() {
         {/**
          * User inputs
          */}
-        <div className="sectionDivider">
+        <section className="sectionDivider">
+          {/* <h2>User Settings:</h2> */}
           <div className="flex gap-2 mb-2">
             <label className="text-lg font-medium " htmlFor="StitchesPerInch">
               Sitches Per inch (left-right):
@@ -202,9 +203,9 @@ export default function Board() {
               className="outline-solid outline outline-blue-500"
             ></input>
           </div>
-        </div>
+        </section>
 
-        <div className="sectionDivider">
+        <section className="sectionDivider">
           <div className="flex gap-2 mb-2">
             <label className="text-lg font-medium " htmlFor="ProjectWidth">
               Project Width (left-right inches):
@@ -239,17 +240,17 @@ export default function Board() {
               className="outline-solid outline outline-blue-500"
             ></input>
           </div>
-        </div>
+        </section>
         {/**
          * Display the cell calculations based on user inputs
          */}
-        <div className="sectionDivider">
+        <section className="sectionDivider">
           <div className="flex items-center justify-center">
             <div className="border-blue-500 border p-2">{`${numberOfCellsWide} cells wide ↔️ x ${numberOfCellsTall} cells high ↕️`}</div>
           </div>
-        </div>
+        </section>
 
-        <div className="sectionDivider">
+        <section className="sectionDivider">
           <div className="flex gap-12">
             <div className="flex flex-col bg-gray-300 ">
               <h2 className="text-lg font-medium mb-2">Color Selection</h2>
@@ -291,11 +292,11 @@ export default function Board() {
               </div>
             </div>
           </div>
-        </div>
+        </section>
         {/**
          * Cell painting options
          */}
-        <div className="sectionDivider flex gap-2">
+        <section className="sectionDivider flex gap-2">
           <button
             onClick={(e) => {
               if (
@@ -333,9 +334,9 @@ export default function Board() {
           >
             Click to reset all cells
           </button>
-        </div>
+        </section>
 
-        <div className="sectionDivider">
+        <section className="sectionDivider">
           <div className="flex items-center gap-3 mb-2">
             <div className="ml-4 flex items-center">
               <span className="mr-2">
@@ -349,15 +350,18 @@ export default function Board() {
               />
             </div>
           </div>
-        </div>
+        </section>
         {/**
          * Actual board with cells
          */}
-        <div className="sectionDivider">
+        <section className="sectionDivider">
+          <h2>Standard Board</h2>
+
           <BoardBorderTopBottom
             numberOfCellsWide={numberOfCellsWide}
             cellWidth={cellWidth}
             defaultCellHeight={defaultCellHeight}
+            reflect={false}
           ></BoardBorderTopBottom>
           <div className="flex">
             <div>
@@ -378,10 +382,10 @@ export default function Board() {
                 onMouseUp={handleMouseUp}
                 activeRow={activeRow}
                 knittingMode={knittingMode}
+                reflect={false}
               ></BoardCenter>
             </div>
             <div>
-              {" "}
               <BoardBorderSide
                 numberOfCellsTall={numberOfCellsTall}
                 cellHeight={cellHeight}
@@ -393,9 +397,60 @@ export default function Board() {
             numberOfCellsWide={numberOfCellsWide}
             cellWidth={cellWidth}
             defaultCellHeight={defaultCellHeight}
+            reflect={false}
           ></BoardBorderTopBottom>
-        </div>
-        <div className="sectionDivider">
+        </section>
+
+        {/**
+         * Reflected board with cells
+         */}
+        <section className="sectionDivider">
+          <h2>Reflected Board</h2>
+          <BoardBorderTopBottom
+            numberOfCellsWide={numberOfCellsWide}
+            cellWidth={cellWidth}
+            defaultCellHeight={defaultCellHeight}
+            reflect={true}
+          ></BoardBorderTopBottom>
+          <div className="flex">
+            <div>
+              <BoardBorderSide
+                numberOfCellsTall={numberOfCellsTall}
+                cellHeight={cellHeight}
+                cellWidth={cellWidth}
+              ></BoardBorderSide>
+            </div>
+            <div>
+              <BoardCenter
+                board={board}
+                cellWidth={cellWidth}
+                cellHeight={cellHeight}
+                handleCellClick={handleCellClick}
+                onMouseDown={handleMouseDown}
+                onMouseEnter={handleMouseEnter}
+                onMouseUp={handleMouseUp}
+                activeRow={activeRow}
+                knittingMode={knittingMode}
+                reflect={true}
+              ></BoardCenter>
+            </div>
+            <div>
+              <BoardBorderSide
+                numberOfCellsTall={numberOfCellsTall}
+                cellHeight={cellHeight}
+                cellWidth={cellWidth}
+              ></BoardBorderSide>
+            </div>
+          </div>
+          <BoardBorderTopBottom
+            numberOfCellsWide={numberOfCellsWide}
+            cellWidth={cellWidth}
+            defaultCellHeight={defaultCellHeight}
+            reflect={true}
+          ></BoardBorderTopBottom>
+        </section>
+
+        <section className="sectionDivider">
           <button
             onClick={(e) => {
               setKnittingMode((s) => !s);
@@ -424,15 +479,23 @@ export default function Board() {
             }}
             className="outline-solid outline outline-blue-500"
           ></input>
-        </div>
-        <div className="sectionDivider">
-          <h2>
-            To quckly erase cells, click on a with the same color you have
-            selected, then drag the cursor.
-          </h2>
-        </div>
+        </section>
+        <section className="sectionDivider">
+          <h2>Tips:</h2>
 
-        <div className="sectionDivider">
+          <ul className="list-disc list-inside">
+            <li>
+              To quckly erase cells, click on a with the same color you have
+              selected, then drag the cursor.
+            </li>
+            <li>
+              In knitting mode use the arrow keys to move the active row up and
+              down
+            </li>
+          </ul>
+        </section>
+
+        <section className="sectionDivider">
           {/**
            * Update the board with saved state
            */}
@@ -479,9 +542,9 @@ export default function Board() {
               Update the board
             </button>
           </form>
-        </div>
+        </section>
 
-        <div className="sectionDivider flex gap-2">
+        <section className="sectionDivider flex gap-2">
           {/**
            * Copy state to clipboard
            */}
@@ -535,7 +598,7 @@ export default function Board() {
           >
             Download state to computer
           </button>
-        </div>
+        </section>
       </div>
     </>
   );

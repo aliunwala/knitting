@@ -11,6 +11,7 @@ type BoardCenterProps = {
   onMouseUp: Function;
   activeRow?: number;
   knittingMode: boolean;
+  reflect: boolean;
 };
 
 export default function BoardCenter({
@@ -23,39 +24,75 @@ export default function BoardCenter({
   onMouseUp,
   activeRow,
   knittingMode,
+  reflect,
 }: BoardCenterProps) {
-  const boardCellsResult = board.map((rowArr: Array<any>, row, arr) => {
-    return (
-      <div
-        key={row + "divforcells"}
-        className={`flex ${
-          knittingMode &&
-          activeRow &&
-          Math.abs(board.length - activeRow) !== row
-            ? "inactiveRow"
-            : ""
-        }`}
-      >
-        {rowArr.map((cellVal: any, col) => {
-          return (
-            <BoardCell
-              key={row + "_" + col + "_boardCell"}
-              //   cellColor={"#ff0000"}
-              cellColor={cellVal.color}
-              cellHeight={cellHeight}
-              cellWidth={cellWidth}
-              row={row}
-              col={col}
-              onMouseDown={onMouseDown}
-              onMouseEnter={onMouseEnter}
-              onMouseUp={onMouseUp}
-              handleCellClick={handleCellClick}
-            ></BoardCell>
-          );
-        })}
-      </div>
-    );
-  });
+  const boardCellsResult = () =>
+    board.map((rowArr: Array<any>, row, arr) => {
+      return (
+        <div
+          key={row + "divforcells"}
+          className={`flex ${
+            knittingMode &&
+            activeRow &&
+            Math.abs(board.length - activeRow) !== row
+              ? "inactiveRow"
+              : ""
+          }`}
+        >
+          {rowArr.map((cellVal: any, col) => {
+            return (
+              <BoardCell
+                key={row + "_" + col + "_boardCell"}
+                //   cellColor={"#ff0000"}
+                cellColor={cellVal.color}
+                cellHeight={cellHeight}
+                cellWidth={cellWidth}
+                row={row}
+                col={col}
+                onMouseDown={onMouseDown}
+                onMouseEnter={onMouseEnter}
+                onMouseUp={onMouseUp}
+                handleCellClick={handleCellClick}
+              ></BoardCell>
+            );
+          })}
+        </div>
+      );
+    });
 
-  return boardCellsResult;
+  const boardCellsResultReflected = () =>
+    board.map((rowArr: Array<any>, row, arr) => {
+      return (
+        <div
+          key={row + "divforcells"}
+          className={`flex ${
+            knittingMode &&
+            activeRow &&
+            Math.abs(board.length - activeRow) !== row
+              ? "inactiveRow"
+              : ""
+          }`}
+        >
+          {rowArr.toReversed().map((cellVal: any, col) => {
+            return (
+              <BoardCell
+                key={row + "_" + col + "_boardCellMapped"}
+                //   cellColor={"#ff0000"}
+                cellColor={cellVal.color}
+                cellHeight={cellHeight}
+                cellWidth={cellWidth}
+                row={row}
+                col={col}
+                onMouseDown={onMouseDown}
+                onMouseEnter={onMouseEnter}
+                onMouseUp={onMouseUp}
+                handleCellClick={handleCellClick}
+              ></BoardCell>
+            );
+          })}
+        </div>
+      );
+    });
+
+  return reflect ? boardCellsResultReflected() : boardCellsResult();
 }
