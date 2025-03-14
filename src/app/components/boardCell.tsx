@@ -39,7 +39,7 @@ function BoardCell({
         }}
         onClick={(e) => handleCellClick(row, col)}
         // onMouseOver={onMouseOverHandler}
-        onMouseDown={() => onMouseDown(row, col)}
+        onMouseDown={(e) => onMouseDown(e, row, col)}
         onMouseEnter={() => onMouseEnter(row, col)}
         onMouseUp={() => onMouseUp()}
         onTouchStart={() => onMouseDown(row, col)}

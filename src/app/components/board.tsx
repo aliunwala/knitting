@@ -9,6 +9,7 @@ import {
   modify2DArray,
   cellDimensions,
   isInRange,
+  getRandomHexColor,
 } from "../utils/helperFunctions";
 import ColorSelect from "./select";
 import BoardBorderTopBottom from "./boardBorderTopBottom";
@@ -24,10 +25,10 @@ export default function Board() {
     "#ef4444", // red
     "#10b981", // green
     "#f59e0b", // amber
-    "#8b5cf6", // purple
-    "#ec4899", // pink
-    "#000000", // black
-    "#ffffff", // white
+    // "#8b5cf6", // purple
+    // "#ec4899", // pink
+    // "#000000", // black
+    // "#ffffff", // white
   ];
   const defaultCellWidth = 34;
   const defaultCellHeight = 34;
@@ -42,10 +43,13 @@ export default function Board() {
   const [activeRow, setActiveRow] = useState(1);
   const [knittingMode, setKnittingMode] = useState(false);
   // Custom color input
-  const [customColor, setCustomColor] = useState("#000000");
+  const [customColor, setCustomColor] = useState(getRandomHexColor());
+  const [customColorList, setCustomColorList] = useState<string[]>(colorsEnum);
   // const [fillColor, setFillColor] = useState(colorsEnum[0]);
   const [currentColor, setCurrentColor] = useState(colorsEnum[0]);
   const [userSavedBoardState, setUserSavedBoardState] = useState("");
+  const [automaticallySavedBoardState, setAutomaticallySavedBoardState] =
+    useState<object[]>([]);
   const numberOfCellsWide = stichesPerInch * projectWidth;
   const numberOfCellsTall = rowsPerInch * projectHeight;
   const { cellHeight, cellWidth } = cellDimensions(
@@ -68,6 +72,7 @@ export default function Board() {
    * Effects
    */
   useEffect(() => {
+    console.log(automaticallySavedBoardState.length);
     if (board && board[0]) {
       if (
         board.length !== numberOfCellsTall ||
@@ -82,7 +87,12 @@ export default function Board() {
         );
       }
     }
-  }, [numberOfCellsWide, numberOfCellsTall, board]);
+  }, [
+    numberOfCellsWide,
+    numberOfCellsTall,
+    automaticallySavedBoardState,
+    board,
+  ]);
 
   /**
    * Handlers
@@ -107,15 +117,55 @@ export default function Board() {
   // Add custom color to palette
   const addCustomColor = () => {
     setCurrentColor(customColor);
+    setCustomColor(getRandomHexColor());
+    setCustomColorList((prevColors) => {
+      if (prevColors.length <= 19) {
+        return [customColor, ...prevColors];
+      } else {
+        return [customColor, ...prevColors.slice(0, -1)];
+      }
+    });
   };
 
   // Handle mouse down on a cell
   const handleMouseDown = useCallback(
-    (row: number, col: number) => {
+    (e: Event, row: number, col: number) => {
+      e.preventDefault();
       isDrawingRef.current = true;
       // Check if the cell already has this color to determine if we're erasing
       isErasingRef.current = board[row][col].color === currentColor;
 
+      setAutomaticallySavedBoardState((state) => {
+        if (state.length >= 10) {
+          return [
+            ...state.slice(1),
+            {
+              board,
+              stichesPerInch,
+              rowsPerInch,
+              projectHeight,
+              projectWidth,
+              customColor,
+              cellColor: currentColor,
+              customColorList,
+            },
+          ];
+        } else {
+          return [
+            ...state,
+            {
+              board,
+              stichesPerInch,
+              rowsPerInch,
+              projectHeight,
+              projectWidth,
+              customColor,
+              cellColor: currentColor,
+              customColorList,
+            },
+          ];
+        }
+      });
       if (isErasingRef.current) {
         const newCell = { color: "#FFFFFF" };
         setBoard((state) => modify2DArray(state, row, col, newCell));
@@ -124,7 +174,16 @@ export default function Board() {
         setBoard((state) => modify2DArray(state, row, col, newCell));
       }
     },
-    [currentColor, board]
+    [
+      currentColor,
+      board,
+      stichesPerInch,
+      rowsPerInch,
+      projectHeight,
+      projectWidth,
+      customColor,
+      customColorList,
+    ]
   );
 
   // Handle mouse enter on a cell (for dragging)
@@ -154,10 +213,16 @@ export default function Board() {
       isDrawingRef.current = false;
     };
 
+    const handleDragStart = (e: Event) => {
+      e.preventDefault();
+    };
+
+    document.addEventListener("dragstart", handleDragStart);
     document.addEventListener("mouseup", handleGlobalMouseUp);
     document.addEventListener("touchend", handleGlobalMouseUp);
 
     return () => {
+      document.removeEventListener("dragstart", handleGlobalMouseUp);
       document.removeEventListener("mouseup", handleGlobalMouseUp);
       document.removeEventListener("touchend", handleGlobalMouseUp);
     };
@@ -165,7 +230,7 @@ export default function Board() {
 
   return (
     <>
-      <div className="max-w-5xl mx-auto p-4">
+      <div className="p-4">
         <h1 className="text-2xl font-bold mb-4">Knitting Helper</h1>
 
         {/**
@@ -245,14 +310,15 @@ export default function Board() {
          * Display the cell calculations based on user inputs
          */}
         <section className="sectionDivider">
-          <div className="flex items-center justify-center">
-            <div className="border-blue-500 border p-2">{`${numberOfCellsWide} cells wide ↔️ x ${numberOfCellsTall} cells high ↕️`}</div>
-          </div>
+          {/* <div className="flex items-center justify-center"> */}
+          {/* <div className="border-blue-500 border p-2">{`${numberOfCellsWide} cells wide ↔️ x ${numberOfCellsTall} cells high ↕️`}</div> */}
+          {/* </div> */}
+          <div className="">{`Using that data your board will be: ${numberOfCellsWide} cells wide ↔️ x ${numberOfCellsTall} cells high ↕️`}</div>
         </section>
 
         <section className="sectionDivider">
           <div className="flex gap-12">
-            <div className="flex flex-col bg-gray-300 ">
+            {/* <div className="flex flex-col bg-gray-300 ">
               <h2 className="text-lg font-medium mb-2">Color Selection</h2>
               <div className="flex flex-wrap gap-2 mb-4">
                 {colorsEnum.map((color, index) => (
@@ -269,7 +335,7 @@ export default function Board() {
                   />
                 ))}
               </div>
-            </div>
+            </div> */}
 
             <div className="flex flex-col  bg-gray-300 ">
               <h2 className="text-lg font-medium mb-2">
@@ -289,6 +355,35 @@ export default function Board() {
                 >
                   Use This Color
                 </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col bg-gray-300 flex-wrap max-w-[184px]">
+              <h2 className="text-lg font-medium mb-2">
+                Previously used colors
+              </h2>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {customColorList.map((color, index) => {
+                  const tempButton = (
+                    <button
+                      title={color}
+                      key={index + "_" + color}
+                      className={`w-8 h-8 rounded-md ${
+                        currentColor === color
+                          ? "ring-2 ring-offset-2 ring-black"
+                          : ""
+                      }`}
+                      style={{ backgroundColor: color }}
+                      onClick={() => setCurrentColor(color)}
+                      aria-label={`Select ${color} color`}
+                    />
+                  );
+                  return (
+                    <div key={index + "_DIV" + color} className="basis-1/5 ">
+                      {tempButton}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -333,6 +428,54 @@ export default function Board() {
             className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
           >
             Click to reset all cells
+          </button>
+
+          <button
+            onClick={(e) => {
+              if (
+                confirm(
+                  `Are you sure you want to reset the previously used colors? this cannot be undone.`
+                )
+              ) {
+                setCustomColorList([]);
+                setCustomColor("#FFFFFF");
+                setCurrentColor("#FFFFFF");
+              }
+            }}
+            type="button"
+            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
+          >
+            Click to reset all previously used colors
+          </button>
+
+          <button
+            onClick={(e) => {
+              // console.log(automaticallySavedBoardState.length);
+              let JSONuserSavedBoardStateTEMP: any;
+              try {
+                const JSONuserSavedBoardState =
+                  automaticallySavedBoardState.pop();
+                if (JSONuserSavedBoardState === undefined) {
+                  // We popped nothing
+                  return;
+                }
+                JSONuserSavedBoardStateTEMP = JSONuserSavedBoardState;
+                setStichesPerInch(JSONuserSavedBoardStateTEMP.stichesPerInch);
+                setRowsPerInch(JSONuserSavedBoardStateTEMP.rowsPerInch);
+                setProjectHeight(JSONuserSavedBoardStateTEMP.projectHeight);
+                setProjectWidth(JSONuserSavedBoardStateTEMP.projectWidth);
+                setBoard(JSONuserSavedBoardStateTEMP.board);
+                setCustomColor(JSONuserSavedBoardStateTEMP.customColor);
+                setCurrentColor(JSONuserSavedBoardStateTEMP.cellColor);
+                setCustomColorList(JSONuserSavedBoardStateTEMP.customColorList);
+              } catch (e) {
+                console.log("Error when updating board state: " + e);
+              }
+            }}
+            type="button"
+            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
+          >
+            Undo
           </button>
         </section>
 
@@ -518,6 +661,7 @@ export default function Board() {
               setBoard(JSONuserSavedBoardStateTEMP.board);
               setCustomColor(JSONuserSavedBoardStateTEMP.customColor);
               setCurrentColor(JSONuserSavedBoardStateTEMP.cellColor);
+              setCustomColorList(JSONuserSavedBoardStateTEMP.customColorList);
             }}
           >
             <label className="text-lg font-medium" htmlFor="boardState">
@@ -559,6 +703,7 @@ export default function Board() {
                   projectWidth,
                   customColor,
                   cellColor: currentColor,
+                  customColorList,
                 })
               );
               console.log(boardStateToPrint);
@@ -584,6 +729,7 @@ export default function Board() {
                   projectWidth,
                   customColor,
                   cellColor: currentColor,
+                  customColorList,
                 })
               );
               console.log(boardStateToPrint);
