@@ -1,7 +1,7 @@
 "use client";
 // import { on } from "events";
 import Cell from "./cell";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
   copyTextToClipboard,
   downloadText,
@@ -15,6 +15,8 @@ import ColorSelect from "./select";
 import BoardBorderTopBottom from "./boardBorderTopBottom";
 import BoardBorderSide from "./boardBorderSide";
 import BoardCenter from "./boardCenter";
+import QuickActionButton from "./quickActionButton";
+import LabeledInput from "./labeledInput";
 
 export default function Board() {
   /**
@@ -93,10 +95,51 @@ export default function Board() {
     automaticallySavedBoardState,
     board,
   ]);
+  /**
+   * Util functions that use state
+   */
+  function loadSavedState(state: any) {
+    setStichesPerInch(state.stichesPerInch);
+    setRowsPerInch(state.rowsPerInch);
+    setProjectHeight(state.projectHeight);
+    setProjectWidth(state.projectWidth);
+    setBoard(state.board);
+    setCustomColor(state.customColor);
+    setCurrentColor(state.cellColor);
+    setCustomColorList(state.customColorList);
+  }
 
+  const createSavedState = useCallback(
+    function createSavedState() {
+      return {
+        board,
+        stichesPerInch,
+        rowsPerInch,
+        projectHeight,
+        projectWidth,
+        customColor,
+        cellColor: currentColor,
+        customColorList,
+      };
+    },
+    [
+      board,
+      stichesPerInch,
+      rowsPerInch,
+      projectHeight,
+      projectWidth,
+      customColor,
+      currentColor,
+      customColorList,
+    ]
+  );
   /**
    * Handlers
    */
+  function handleActiveRow(e: ChangeEvent<HTMLInputElement>) {
+    setActiveRow(isInRange(Number(e.target.value), 1, numberOfCellsTall));
+  }
+
   const handleCellClick = useCallback(
     (row: number, col: number) => {
       const newCell = { color: currentColor };
@@ -110,12 +153,36 @@ export default function Board() {
       initalBoardState(numberOfCellsWide, numberOfCellsTall, currentColor)
     );
   }
-  // Handle custom color change
+  function handleColorAllCellsToWhite(e: any) {
+    // setFillColor(e.target.value);
+    setBoard((state) =>
+      initalBoardState(numberOfCellsWide, numberOfCellsTall, "#FFFFFF")
+    );
+  }
+  function handleCustomColorsListReset(e: any) {
+    // setFillColor(e.target.value);
+    setCustomColorList([]);
+    setCustomColor("#FFFFFF");
+    setCurrentColor("#FFFFFF");
+  }
+  function handleUndo(e: any) {
+    let JSONuserSavedBoardStateTEMP: any;
+    try {
+      const JSONuserSavedBoardState = automaticallySavedBoardState.pop();
+      if (JSONuserSavedBoardState === undefined) {
+        // We popped nothing
+        return;
+      }
+      loadSavedState(JSONuserSavedBoardState);
+    } catch (e) {
+      console.log("Error when updating board state: " + e);
+    }
+  }
   const handleCustomColorChange = (e: any) => {
     setCustomColor(e.target.value);
   };
   // Add custom color to palette
-  const addCustomColor = () => {
+  const handleAddCustomColor = () => {
     setCurrentColor(customColor);
     setCustomColor(getRandomHexColor());
     setCustomColorList((prevColors) => {
@@ -137,33 +204,9 @@ export default function Board() {
 
       setAutomaticallySavedBoardState((state) => {
         if (state.length >= 10) {
-          return [
-            ...state.slice(1),
-            {
-              board,
-              stichesPerInch,
-              rowsPerInch,
-              projectHeight,
-              projectWidth,
-              customColor,
-              cellColor: currentColor,
-              customColorList,
-            },
-          ];
+          return [...state.slice(1), createSavedState()];
         } else {
-          return [
-            ...state,
-            {
-              board,
-              stichesPerInch,
-              rowsPerInch,
-              projectHeight,
-              projectWidth,
-              customColor,
-              cellColor: currentColor,
-              customColorList,
-            },
-          ];
+          return [...state, createSavedState()];
         }
       });
       if (isErasingRef.current) {
@@ -174,16 +217,7 @@ export default function Board() {
         setBoard((state) => modify2DArray(state, row, col, newCell));
       }
     },
-    [
-      currentColor,
-      board,
-      stichesPerInch,
-      rowsPerInch,
-      projectHeight,
-      projectWidth,
-      customColor,
-      customColorList,
-    ]
+    [currentColor, board, createSavedState]
   );
 
   // Handle mouse enter on a cell (for dragging)
@@ -217,7 +251,9 @@ export default function Board() {
       e.preventDefault();
     };
 
+    // Had to add this for bug: Chrome on Mac creating a globe icon on dragstart events
     document.addEventListener("dragstart", handleDragStart);
+
     document.addEventListener("mouseup", handleGlobalMouseUp);
     document.addEventListener("touchend", handleGlobalMouseUp);
 
@@ -239,104 +275,62 @@ export default function Board() {
         <section className="sectionDivider">
           {/* <h2>User Settings:</h2> */}
           <div className="flex gap-2 mb-2">
-            <label className="text-lg font-medium " htmlFor="StitchesPerInch">
-              Sitches Per inch (left-right):
-            </label>
-            <input
-              type="number"
-              id="StitchesPerInch"
-              name="StitchesPerInch"
+            <LabeledInput
               value={stichesPerInch}
-              onChange={(e) => {
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 setStichesPerInch(isInRange(Number(e.target.value), 1, 25));
               }}
-              className="outline-solid outline outline-blue-500"
-            ></input>
+              id="StitchesPerInch"
+              type="number"
+              labelText={"Sitches Per inch (left-right):"}
+            ></LabeledInput>
           </div>
           <div className="flex gap-2 mb-2">
-            <label className="text-lg font-medium " htmlFor="RowsPerInch">
-              Rows Per inch (up-down):
-            </label>
-            <input
-              type="number"
-              id="RowsPerInch"
-              name="RowsPerInch"
+            <LabeledInput
               value={rowsPerInch}
-              onChange={(e) => {
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 setRowsPerInch(isInRange(Number(e.target.value), 1, 25));
               }}
-              className="outline-solid outline outline-blue-500"
-            ></input>
+              id="RowsPerInch"
+              type="number"
+              labelText={"Rows Per inch (up-down):"}
+            ></LabeledInput>
           </div>
         </section>
 
         <section className="sectionDivider">
           <div className="flex gap-2 mb-2">
-            <label className="text-lg font-medium " htmlFor="ProjectWidth">
-              Project Width (left-right inches):
-            </label>
-            <input
-              type="number"
-              id="ProjectWidth"
-              name="ProjectWidth"
-              min={1}
-              max={25}
+            <LabeledInput
               value={projectWidth}
-              onChange={(e) =>
-                setProjectWidth(isInRange(Number(e.target.value), 1, 25))
-              }
-              className="outline-solid outline outline-blue-500"
-            ></input>
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                setProjectWidth(isInRange(Number(e.target.value), 1, 25));
+              }}
+              id="ProjectWidth"
+              type="number"
+              labelText={"Project Width (left-right inches):"}
+            ></LabeledInput>
           </div>
           <div className="flex gap-2 mb-2">
-            <label className="text-lg font-medium " htmlFor="ProjectHeight">
-              Project Height (up-down inches):
-            </label>
-            <input
-              type="number"
-              id="ProjectHeight"
-              name="ProjectHeight"
-              min={1}
-              max={25}
+            <LabeledInput
               value={projectHeight}
-              onChange={(e) =>
-                setProjectHeight(isInRange(Number(e.target.value), 1, 25))
-              }
-              className="outline-solid outline outline-blue-500"
-            ></input>
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                setProjectHeight(isInRange(Number(e.target.value), 1, 25));
+              }}
+              id="ProjectHeight"
+              type="number"
+              labelText={"Project Height (up-down inches): "}
+            ></LabeledInput>
           </div>
         </section>
         {/**
          * Display the cell calculations based on user inputs
          */}
         <section className="sectionDivider">
-          {/* <div className="flex items-center justify-center"> */}
-          {/* <div className="border-blue-500 border p-2">{`${numberOfCellsWide} cells wide ↔️ x ${numberOfCellsTall} cells high ↕️`}</div> */}
-          {/* </div> */}
           <div className="">{`Using that data your board will be: ${numberOfCellsWide} cells wide ↔️ x ${numberOfCellsTall} cells high ↕️`}</div>
         </section>
 
         <section className="sectionDivider">
           <div className="flex gap-12">
-            {/* <div className="flex flex-col bg-gray-300 ">
-              <h2 className="text-lg font-medium mb-2">Color Selection</h2>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {colorsEnum.map((color, index) => (
-                  <button
-                    key={index}
-                    className={`w-8 h-8 rounded-md ${
-                      currentColor === color
-                        ? "ring-2 ring-offset-2 ring-black"
-                        : ""
-                    }`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => setCurrentColor(color)}
-                    aria-label={`Select ${color} color`}
-                  />
-                ))}
-              </div>
-            </div> */}
-
             <div className="flex flex-col  bg-gray-300 ">
               <h2 className="text-lg font-medium mb-2">
                 Custom Color Selection
@@ -350,8 +344,8 @@ export default function Board() {
                   aria-label="Choose custom color"
                 />
                 <button
-                  onClick={addCustomColor}
-                  className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                  onClick={handleAddCustomColor}
+                  className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
                 >
                   Use This Color
                 </button>
@@ -392,91 +386,33 @@ export default function Board() {
          * Cell painting options
          */}
         <section className="sectionDivider flex gap-2">
-          <button
-            onClick={(e) => {
-              if (
-                confirm(
-                  `Are you sure you want to color all the cells to ${currentColor}? this cannot be undone.`
-                )
-              ) {
-                handleColorAllCellsToOneColor(e);
-              }
-            }}
-            type="button"
-            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
+          <QuickActionButton
+            needsConfirmation={true}
+            confirmText={`Are you sure you want to color all the cells to ${currentColor}? this cannot be undone.`}
+            onClickHandler={handleColorAllCellsToOneColor}
           >
             Click to color all cells
-          </button>
-
-          <button
-            onClick={(e) => {
-              if (
-                confirm(
-                  `Are you sure you want to reset the cells to all be white? this cannot be undone.`
-                )
-              ) {
-                setBoard((state) =>
-                  initalBoardState(
-                    numberOfCellsWide,
-                    numberOfCellsTall,
-                    "#FFFFFF"
-                  )
-                );
-              }
-            }}
-            type="button"
-            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
+          </QuickActionButton>
+          <QuickActionButton
+            needsConfirmation={true}
+            confirmText={`Are you sure you want to reset the cells to all be white? this cannot be undone.`}
+            onClickHandler={handleColorAllCellsToWhite}
           >
             Click to reset all cells
-          </button>
-
-          <button
-            onClick={(e) => {
-              if (
-                confirm(
-                  `Are you sure you want to reset the previously used colors? this cannot be undone.`
-                )
-              ) {
-                setCustomColorList([]);
-                setCustomColor("#FFFFFF");
-                setCurrentColor("#FFFFFF");
-              }
-            }}
-            type="button"
-            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
+          </QuickActionButton>
+          <QuickActionButton
+            needsConfirmation={true}
+            confirmText={`Are you sure you want to reset the previously used colors? this cannot be undone`}
+            onClickHandler={handleCustomColorsListReset}
           >
             Click to reset all previously used colors
-          </button>
-
-          <button
-            onClick={(e) => {
-              // console.log(automaticallySavedBoardState.length);
-              let JSONuserSavedBoardStateTEMP: any;
-              try {
-                const JSONuserSavedBoardState =
-                  automaticallySavedBoardState.pop();
-                if (JSONuserSavedBoardState === undefined) {
-                  // We popped nothing
-                  return;
-                }
-                JSONuserSavedBoardStateTEMP = JSONuserSavedBoardState;
-                setStichesPerInch(JSONuserSavedBoardStateTEMP.stichesPerInch);
-                setRowsPerInch(JSONuserSavedBoardStateTEMP.rowsPerInch);
-                setProjectHeight(JSONuserSavedBoardStateTEMP.projectHeight);
-                setProjectWidth(JSONuserSavedBoardStateTEMP.projectWidth);
-                setBoard(JSONuserSavedBoardStateTEMP.board);
-                setCustomColor(JSONuserSavedBoardStateTEMP.customColor);
-                setCurrentColor(JSONuserSavedBoardStateTEMP.cellColor);
-                setCustomColorList(JSONuserSavedBoardStateTEMP.customColorList);
-              } catch (e) {
-                console.log("Error when updating board state: " + e);
-              }
-            }}
-            type="button"
-            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
+          </QuickActionButton>
+          <QuickActionButton
+            needsConfirmation={false}
+            onClickHandler={handleUndo}
           >
             Undo
-          </button>
+          </QuickActionButton>
         </section>
 
         <section className="sectionDivider">
@@ -594,34 +530,22 @@ export default function Board() {
         </section>
 
         <section className="sectionDivider">
-          <button
-            onClick={(e) => {
-              setKnittingMode((s) => !s);
-            }}
-            type="button"
-            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
-          >
-            Click to toggle knitting mode
-          </button>
+          <div className="flex items-center gap-4">
+            <QuickActionButton
+              needsConfirmation={false}
+              onClickHandler={() => setKnittingMode((s) => !s)}
+            >
+              Click to toggle knitting mode
+            </QuickActionButton>
 
-          <label
-            className="text-lg font-medium "
-            htmlFor="knittingModeActiveRow"
-          >
-            Active Row:
-          </label>
-          <input
-            type="number"
-            id="knittingModeActiveRow"
-            name="knittingModeActiveRow"
-            value={activeRow}
-            onChange={(e) => {
-              setActiveRow(
-                isInRange(Number(e.target.value), 1, numberOfCellsTall)
-              );
-            }}
-            className="outline-solid outline outline-blue-500"
-          ></input>
+            <LabeledInput
+              value={activeRow}
+              onChange={handleActiveRow}
+              id="knittingModeActiveRow"
+              type="number"
+              labelText={"Active Row: "}
+            ></LabeledInput>
+          </div>
         </section>
         <section className="sectionDivider">
           <h2>Tips:</h2>
@@ -649,35 +573,21 @@ export default function Board() {
               let JSONuserSavedBoardStateTEMP: any;
               try {
                 const JSONuserSavedBoardState = JSON.parse(userSavedBoardState);
-                JSONuserSavedBoardStateTEMP = JSONuserSavedBoardState;
-                // return JSONuserSavedBoardState;
+                loadSavedState(JSONuserSavedBoardState);
               } catch (e) {
                 console.log("Error when updating board state: " + e);
               }
-              setStichesPerInch(JSONuserSavedBoardStateTEMP.stichesPerInch);
-              setRowsPerInch(JSONuserSavedBoardStateTEMP.rowsPerInch);
-              setProjectHeight(JSONuserSavedBoardStateTEMP.projectHeight);
-              setProjectWidth(JSONuserSavedBoardStateTEMP.projectWidth);
-              setBoard(JSONuserSavedBoardStateTEMP.board);
-              setCustomColor(JSONuserSavedBoardStateTEMP.customColor);
-              setCurrentColor(JSONuserSavedBoardStateTEMP.cellColor);
-              setCustomColorList(JSONuserSavedBoardStateTEMP.customColorList);
             }}
           >
-            <label className="text-lg font-medium" htmlFor="boardState">
-              Saved board state:
-            </label>
-            <input
-              type="text"
-              id="boardState"
-              name="boardState"
+            <LabeledInput
               value={userSavedBoardState}
-              className="outline-solid outline outline-blue-500"
-              onChange={(e) => {
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 setUserSavedBoardState(e.target.value);
               }}
-            ></input>
-
+              id="boardState"
+              type="text"
+              labelText={"Saved board state:"}
+            ></LabeledInput>
             <button
               className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
               type="submit"
@@ -692,58 +602,31 @@ export default function Board() {
           {/**
            * Copy state to clipboard
            */}
-          <button
-            onClick={() => {
-              const boardStateToPrint = String(
-                JSON.stringify({
-                  board,
-                  stichesPerInch,
-                  rowsPerInch,
-                  projectHeight,
-                  projectWidth,
-                  customColor,
-                  cellColor: currentColor,
-                  customColorList,
-                })
-              );
-              console.log(boardStateToPrint);
+          <QuickActionButton
+            needsConfirmation={false}
+            onClickHandler={() => {
+              const boardStateToPrint = JSON.stringify(createSavedState());
               copyTextToClipboard(boardStateToPrint);
             }}
-            type="button"
-            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
           >
             Copy state to clipboard
-          </button>
-
+          </QuickActionButton>
           {/**
            * Download state to file
            */}
-          <button
-            onClick={() => {
-              const boardStateToPrint = String(
-                JSON.stringify({
-                  board,
-                  stichesPerInch,
-                  rowsPerInch,
-                  projectHeight,
-                  projectWidth,
-                  customColor,
-                  cellColor: currentColor,
-                  customColorList,
-                })
-              );
-              console.log(boardStateToPrint);
+          <QuickActionButton
+            needsConfirmation={false}
+            onClickHandler={() => {
+              const boardStateToPrint = JSON.stringify(createSavedState());
               copyTextToClipboard(boardStateToPrint);
               downloadText(
                 boardStateToPrint,
                 `boardState${String(new Date().toISOString())}.txt`
               );
             }}
-            type="button"
-            className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
           >
             Download state to computer
-          </button>
+          </QuickActionButton>
         </section>
       </div>
     </>
