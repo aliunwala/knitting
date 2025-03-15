@@ -362,7 +362,7 @@ export default function Board() {
               ></div>
             </div>
 
-            <div className="flex flex-col bg-gray-300 flex-wrap max-w-[184px]">
+            <div className="flex flex-col bg-gray-300 flex-wrap max-w-[152px]">
               <h2 className="text-lg font-medium mb-2">Colors:</h2>
               <div className="flex flex-wrap gap-2 mb-4">
                 {customColorList.map((color, index) => {
@@ -437,14 +437,14 @@ export default function Board() {
             confirmText={`Are you sure you want to color all the cells to ${currentColor}? this cannot be undone.`}
             onClickHandler={handleColorAllCellsToOneColor}
           >
-            Click to color all cells
+            Color all cells
           </QuickActionButton>
           <QuickActionButton
             needsConfirmation={true}
             confirmText={`Are you sure you want to reset the cells to all be white? this cannot be undone.`}
             onClickHandler={handleColorAllCellsToWhite}
           >
-            Click to reset all cells
+            Reset all cells
           </QuickActionButton>
           <QuickActionButton
             needsConfirmation={false}
