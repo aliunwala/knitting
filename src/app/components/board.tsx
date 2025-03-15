@@ -17,6 +17,7 @@ import BoardBorderSide from "./boardBorderSide";
 import BoardCenter from "./boardCenter";
 import QuickActionButton from "./quickActionButton";
 import LabeledInput from "./labeledInput";
+import { Plus } from "lucide-react";
 
 export default function Board() {
   /**
@@ -164,6 +165,18 @@ export default function Board() {
     setCustomColorList([]);
     setCustomColor("#FFFFFF");
     setCurrentColor("#FFFFFF");
+  }
+  function handleDeleteCustomColor() {
+    if (customColorList.length >= 2) {
+      // Set current color to next color
+      setCurrentColor(customColorList[1]);
+    }
+    if (customColorList.length >= 1) {
+      // Need atleast 1 color to delete
+      setCustomColorList(
+        customColorList.filter((value) => value != currentColor)
+      );
+    }
   }
   function handleUndo(e: any) {
     let JSONuserSavedBoardStateTEMP: any;
@@ -331,31 +344,18 @@ export default function Board() {
 
         <section className="sectionDivider">
           <div className="flex gap-12">
-            <div className="flex flex-col  bg-gray-300 ">
-              <h2 className="text-lg font-medium mb-2">
-                Custom Color Selection
-              </h2>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={customColor}
-                  onChange={handleCustomColorChange}
-                  className="w-8 h-8 rounded-md"
-                  aria-label="Choose custom color"
-                />
-                <button
-                  onClick={handleAddCustomColor}
-                  className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
-                >
-                  Use This Color
-                </button>
-              </div>
+            <div className="bg-gray-300 flex flex-col items-center">
+              <span className="mr-2">
+                <p className="text-lg font-medium mb-2">Current color:</p>
+              </span>
+              <div
+                className="w-12 h-12 rounded border border-gray-300 ring-2 ring-offset-2 ring-black"
+                style={{ backgroundColor: currentColor }}
+              ></div>
             </div>
 
             <div className="flex flex-col bg-gray-300 flex-wrap max-w-[184px]">
-              <h2 className="text-lg font-medium mb-2">
-                Previously used colors
-              </h2>
+              <h2 className="text-lg font-medium mb-2">Colors:</h2>
               <div className="flex flex-wrap gap-2 mb-4">
                 {customColorList.map((color, index) => {
                   const tempButton = (
@@ -380,6 +380,44 @@ export default function Board() {
                 })}
               </div>
             </div>
+
+            <div className="flex flex-col  gap-4">
+              <div className="flex   bg-gray-300 gap-2">
+                <h2 className="text-lg font-medium mb-2">Select color:</h2>
+                <input
+                  type="color"
+                  value={customColor}
+                  onChange={handleCustomColorChange}
+                  className="w-16 h-8 rounded-md"
+                  aria-label="Choose custom color"
+                ></input>
+                <button
+                  onClick={handleAddCustomColor}
+                  className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded "
+                >
+                  Add color
+                </button>
+              </div>
+              <QuickActionButton
+                needsConfirmation={true}
+                confirmText={`Are you sure you want to reset the previously used colors? this cannot be undone`}
+                onClickHandler={handleCustomColorsListReset}
+              >
+                Delete all colors
+              </QuickActionButton>
+              <QuickActionButton
+                needsConfirmation={false}
+                onClickHandler={handleDeleteCustomColor}
+              >
+                <div className="flex items-center gap-2">
+                  <p>Delete current color:</p>
+                  <div
+                    className="w-8 h-8 rounded border border-gray-300"
+                    style={{ backgroundColor: currentColor }}
+                  ></div>
+                </div>
+              </QuickActionButton>
+            </div>
           </div>
         </section>
         {/**
@@ -401,13 +439,6 @@ export default function Board() {
             Click to reset all cells
           </QuickActionButton>
           <QuickActionButton
-            needsConfirmation={true}
-            confirmText={`Are you sure you want to reset the previously used colors? this cannot be undone`}
-            onClickHandler={handleCustomColorsListReset}
-          >
-            Click to reset all previously used colors
-          </QuickActionButton>
-          <QuickActionButton
             needsConfirmation={false}
             onClickHandler={handleUndo}
           >
@@ -415,7 +446,7 @@ export default function Board() {
           </QuickActionButton>
         </section>
 
-        <section className="sectionDivider">
+        {/* <section className="sectionDivider">
           <div className="flex items-center gap-3 mb-2">
             <div className="ml-4 flex items-center">
               <span className="mr-2">
@@ -429,7 +460,7 @@ export default function Board() {
               />
             </div>
           </div>
-        </section>
+        </section> */}
         {/**
          * Actual board with cells
          */}
