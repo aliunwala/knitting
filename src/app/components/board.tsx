@@ -168,8 +168,16 @@ export default function Board() {
   }
   function handleDeleteCustomColor() {
     if (customColorList.length >= 2) {
-      // Set current color to next color
-      setCurrentColor(customColorList[1]);
+      // Set current color to first non-current color
+      let colorVal = "#FFFFFF";
+      for (let i = 0; i < customColorList.length; i++) {
+        const value = customColorList[i];
+        if (value != currentColor) {
+          colorVal = value;
+          break;
+        }
+      }
+      setCurrentColor(colorVal);
     }
     if (customColorList.length >= 1) {
       // Need atleast 1 color to delete
