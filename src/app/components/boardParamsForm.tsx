@@ -39,12 +39,6 @@ const inputNamesStructure = [
 ] as const;
 
 // Default values to fill the form with
-export const inputDefaults = {
-  stichesPerInch: 3,
-  rowsPerInch: 3,
-  projectWidth: 3,
-  projectHeight: 3,
-};
 
 // Used for additional labels/descriptors that the form could use (after/before input)
 const inputAdornment = {
@@ -69,13 +63,17 @@ const inputAdornment = {
 // Need for passing an onSubmit function to the form
 interface BoardParamsFormProps {
   onSubmit: (values: z.infer<typeof formSchemaBoardParams>) => void;
+  defaultValues: z.infer<typeof formSchemaBoardParams>;
 }
 
 // This function is somewhat reusable now
-export default function BoardParamsForm({ onSubmit }: BoardParamsFormProps) {
+export default function BoardParamsForm({
+  onSubmit,
+  defaultValues,
+}: BoardParamsFormProps) {
   const form = useForm<z.infer<typeof formSchemaBoardParams>>({
     resolver: zodResolver(formSchemaBoardParams),
-    defaultValues: inputDefaults,
+    defaultValues: defaultValues,
   });
 
   const showFormDesc = (value: keyof typeof inputAdornment) =>

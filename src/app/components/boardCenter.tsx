@@ -1,3 +1,4 @@
+import { TupleKeyDictionary } from "../utils/tupleKeyDictionary";
 import BoardCell from "./boardCell";
 import Cell from "./cell";
 
@@ -12,6 +13,7 @@ type BoardCenterProps = {
   activeRow?: number;
   knittingMode: boolean;
   reflect: boolean;
+  colorMap: TupleKeyDictionary<string>;
 };
 
 export default function BoardCenter({
@@ -25,6 +27,7 @@ export default function BoardCenter({
   activeRow,
   knittingMode,
   reflect,
+  colorMap,
 }: BoardCenterProps) {
   const boardCellsResult = () =>
     board.map((rowArr: Array<any>, row, arr) => {
@@ -44,7 +47,8 @@ export default function BoardCenter({
               <BoardCell
                 key={row + "_" + col + "_boardCell"}
                 //   cellColor={"#ff0000"}
-                cellColor={cellVal.color}
+                // cellColor={cellVal.color}
+                cellColor={colorMap.get([row, col])}
                 cellHeight={cellHeight}
                 cellWidth={cellWidth}
                 row={row}
@@ -73,12 +77,11 @@ export default function BoardCenter({
               : ""
           }`}
         >
-          {rowArr.toReversed().map((cellVal: any, col) => {
+          {rowArr.map((cellVal: any, col) => {
             return (
               <BoardCell
                 key={row + "_" + col + "_boardCellMapped"}
-                //   cellColor={"#ff0000"}
-                cellColor={cellVal.color}
+                cellColor={colorMap.get([row, rowArr.length - 1 - col])}
                 cellHeight={cellHeight}
                 cellWidth={cellWidth}
                 row={row}

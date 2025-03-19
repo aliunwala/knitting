@@ -1,6 +1,5 @@
 "use client";
 // import { on } from "events";
-import Cell from "./cell";
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
   copyTextToClipboard,
@@ -11,19 +10,16 @@ import {
   isInRange,
   getRandomHexColor,
 } from "../utils/helperFunctions";
-import ColorSelect from "./select";
 import BoardBorderTopBottom from "./boardBorderTopBottom";
 import BoardBorderSide from "./boardBorderSide";
 import BoardCenter from "./boardCenter";
 import QuickActionButton from "./quickActionButton";
 import LabeledInput from "./labeledInput";
-import { Plus } from "lucide-react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import FormInput from "./formInput";
-import BoardParamsForm, { inputDefaults } from "./boardParamsForm";
+import BoardParamsForm from "./boardParamsForm";
 import { z } from "zod";
 import { formSchemaBoardParams } from "@/app/components/boardParamsForm";
 import { Button } from "@/components/ui/button";
+import { TupleKeyDictionary } from "../utils/tupleKeyDictionary";
 
 export default function Board() {
   /**
@@ -34,26 +30,24 @@ export default function Board() {
     "#ef4444", // red
     "#10b981", // green
     "#f59e0b", // amber
-    // "#8b5cf6", // purple
-    // "#ec4899", // pink
-    // "#000000", // black
-    // "#ffffff", // white
   ];
   const defaultCellWidth = 34;
   const defaultCellHeight = 34;
 
+  let inputDefaults = {
+    stichesPerInch: 3,
+    rowsPerInch: 3,
+    projectWidth: 3,
+    projectHeight: 3,
+  };
   /**
    * State & Derived State & refs
    */
   // User inputs for grid
-  // const [stichesPerInch, setStichesPerInch] = useState(5);
-  // const [rowsPerInch, setRowsPerInch] = useState(10);
-  // const [projectWidth, setProjectWidth] = useState(3);
-  // const [projectHeight, setProjectHeight] = useState(3);
-
   const [boardParamsFormState, setBoardParamsFormState] =
     useState(inputDefaults);
 
+  const [colorMap, setColorMap] = useState(new TupleKeyDictionary<string>());
   // User inputs for knitting mode
   const [activeRow, setActiveRow] = useState(1);
   const [knittingMode, setKnittingMode] = useState(false);
@@ -75,14 +69,10 @@ export default function Board() {
   /**
    * Derived state:
    */
-
-  // Need to change this to only update onSubmit
   const numberOfCellsWide =
     boardParamsFormState.stichesPerInch * boardParamsFormState.projectWidth;
   const numberOfCellsTall =
     boardParamsFormState.rowsPerInch * boardParamsFormState.projectHeight;
-  //  numberOfCellsWide; // = stichesPerInch * projectWidth;
-  // let numberOfCellsTall; // = rowsPerInch * projectHeight;
 
   const { cellHeight, cellWidth } = cellDimensions(
     boardParamsFormState.projectWidth,
@@ -97,113 +87,116 @@ export default function Board() {
   const isDrawingRef = useRef(false);
   // Tracking if we're in erase mode
   const isErasingRef = useRef(false);
-  const [board, setBoard] = useState(
-    initalBoardState(numberOfCellsWide, numberOfCellsTall)
-  );
+  // const [board, setBoard] = useState(
+  //   initalBoardState(numberOfCellsWide, numberOfCellsTall)
+  // );
+  let board = initalBoardState(numberOfCellsWide, numberOfCellsTall);
 
   /**
-   * Hooks
-   */
-
-  useEffect(() => {
-    if (board && board[0]) {
-      if (
-        board.length !== numberOfCellsTall ||
-        board[0].length !== numberOfCellsWide
-      ) {
-        console.log("Setting initial board state");
-        setBoard((state) =>
-          initalBoardState(
-            isInRange(numberOfCellsWide, 1, 300),
-            isInRange(numberOfCellsTall, 1, 300)
-          )
-        );
-      }
-    }
-  }, [
-    numberOfCellsWide,
-    numberOfCellsTall,
-    automaticallySavedBoardState,
-    board,
-  ]);
-  /**
-   * Util functions that use state
+   * Loads a state onto the page
    */
   function loadSavedState(state: any) {
+    inputDefaults = {
+      stichesPerInch: state.boardParamsFormState.stichesPerInch,
+      rowsPerInch: state.boardParamsFormState.rowsPerInch,
+      projectWidth: state.boardParamsFormState.projectHeight,
+      projectHeight: state.boardParamsFormState.projectWidth,
+    };
+
     setBoardParamsFormState({
       stichesPerInch: state.boardParamsFormState.stichesPerInch,
       rowsPerInch: state.boardParamsFormState.rowsPerInch,
       projectWidth: state.boardParamsFormState.projectHeight,
       projectHeight: state.boardParamsFormState.projectWidth,
     });
-    // setStichesPerInch(state.stichesPerInch);
-    // setRowsPerInch(state.rowsPerInch);
-    // setProjectHeight(state.projectHeight);
-    // setProjectWidth(state.projectWidth);
-    setBoard(state.board);
+    board = state.board;
+    setColorMap(TupleKeyDictionary.fromJSON(state.colorMap));
+    // setBoard(state.board);
     setCustomColor(state.customColor);
     setCurrentColor(state.cellColor);
     setCustomColorList(state.customColorList);
   }
 
+  /**
+   * Creates a state from the current page
+   */
   const createSavedState = useCallback(
     function createSavedState() {
       return {
         board,
-        // stichesPerInch,
-        // rowsPerInch,
-        // projectHeight,
-        // projectWidth,
         boardParamsFormState,
         customColor,
         cellColor: currentColor,
         customColorList,
+        colorMap: colorMap.toJSONString(),
       };
     },
     [
       board,
-      // stichesPerInch,
-      // rowsPerInch,
-      // projectHeight,
-      // projectWidth,
       boardParamsFormState,
       customColor,
       currentColor,
       customColorList,
+      colorMap,
     ]
   );
+
   /**
-   * Handlers
+   * HANDLERS
+   */
+
+  /**
+   * Colors the right row when in knitting mode
    */
   function handleActiveRow(e: ChangeEvent<HTMLInputElement>) {
     setActiveRow(isInRange(Number(e.target.value), 1, numberOfCellsTall));
   }
 
+  /**
+   * Colors a cell when clicked
+   */
   const handleCellClick = useCallback(
     (row: number, col: number) => {
-      const newCell = { color: currentColor };
-      setBoard((state) => modify2DArray(state, row, col, newCell));
+      setColorMap((state) => {
+        return state.getCopyWithNewItem([row, col], currentColor);
+      });
     },
     [currentColor]
   );
+
+  /**
+   * Sets all cells to the currentColor
+   */
   function handleColorAllCellsToOneColor(e: any) {
-    // setFillColor(e.target.value);
-    setBoard((state) =>
-      initalBoardState(numberOfCellsWide, numberOfCellsTall, currentColor)
-    );
+    const floodFillDict = new TupleKeyDictionary<string>();
+    board.forEach((value, row) => {
+      board[0].forEach((value, col) => {
+        floodFillDict.set([row, col], currentColor);
+      });
+    });
+    setColorMap((s) => floodFillDict);
   }
+
+  /**
+   * Sets all cells to white
+   */
   function handleColorAllCellsToWhite(e: any) {
-    // setFillColor(e.target.value);
-    setBoard((state) =>
-      initalBoardState(numberOfCellsWide, numberOfCellsTall, "#FFFFFF")
-    );
+    setColorMap(new TupleKeyDictionary<string>());
   }
+
+  /**
+   * Removes all colors from the palette
+   */
   function handleCustomColorsListReset(e: any) {
     // setFillColor(e.target.value);
     setCustomColorList([]);
     setCustomColor("#FFFFFF");
     setCurrentColor("#FFFFFF");
   }
+
+  /**
+   * Removes one color from the palette
+   */
   function handleDeleteCustomColor() {
     if (customColorList.length >= 2) {
       // Set current color to first non-current color
@@ -224,6 +217,10 @@ export default function Board() {
       );
     }
   }
+
+  /**
+   * Undos back to the last mouse-down event
+   */
   function handleUndo(e: any) {
     let JSONuserSavedBoardStateTEMP: any;
     try {
@@ -237,10 +234,18 @@ export default function Board() {
       console.log("Error when updating board state: " + e);
     }
   }
+
+  /**
+   * Sets the activeColor on the palette
+   */
   const handleCustomColorChange = (e: any) => {
     setCustomColor(e.target.value);
   };
-  // Add custom color to palette
+
+  /**
+   * Adds one color to the palette
+   */
+
   const handleAddCustomColor = () => {
     setCurrentColor(customColor);
     setCustomColor(getRandomHexColor());
@@ -253,7 +258,10 @@ export default function Board() {
     });
   };
 
-  // Handle mouse down on a cell
+  /**
+   * Handles mousedown events on a cell, decides if we are drawing or erasing and saves a board state.
+   * Then colors the cell white or the currentColor
+   */
   const handleMouseDown = useCallback(
     (e: Event, row: number, col: number) => {
       e.preventDefault();
@@ -269,38 +277,49 @@ export default function Board() {
         }
       });
       if (isErasingRef.current) {
-        const newCell = { color: "#FFFFFF" };
-        setBoard((state) => modify2DArray(state, row, col, newCell));
+        setColorMap((prevState) => {
+          return prevState.getCopyWithNewItem([row, col], "#FFFFFF");
+        });
       } else {
-        const newCell = { color: currentColor };
-        setBoard((state) => modify2DArray(state, row, col, newCell));
+        setColorMap((prevState) => {
+          return prevState.getCopyWithNewItem([row, col], currentColor);
+        });
       }
     },
     [currentColor, board, createSavedState]
   );
 
-  // Handle mouse enter on a cell (for dragging)
+  /**
+   * Handles mouseenter events on a cell, decides if we are drawing or erasing and
+   * then colors the cell white or the currentColor
+   */
   const handleMouseEnter = useCallback(
     (row: number, col: number) => {
       if (!isDrawingRef.current) return;
 
       if (isErasingRef.current) {
-        const newCell = { color: "#FFFFFF" };
-        setBoard((state) => modify2DArray(state, row, col, newCell));
+        setColorMap((prevState) => {
+          return prevState.getCopyWithNewItem([row, col], "#FFFFFF");
+        });
       } else {
-        const newCell = { color: currentColor };
-        setBoard((state) => modify2DArray(state, row, col, newCell));
+        setColorMap((prevState) => {
+          return prevState.getCopyWithNewItem([row, col], currentColor);
+        });
       }
     },
     [currentColor]
   );
 
-  // Handle mouse up
+  /**
+   * Handles mouseup events on a cell
+   */
   const handleMouseUp = useCallback(() => {
     isDrawingRef.current = false;
   }, []);
 
-  // Handle mouse up on the entire document
+  /**
+   * Handles mouseup/touchend events for the whole document as well as a bug around handleDragStart
+   */
   useEffect(() => {
     const handleGlobalMouseUp = () => {
       isDrawingRef.current = false;
@@ -323,18 +342,6 @@ export default function Board() {
     };
   }, []);
 
-  // const {
-  //   register,
-  //   handleSubmit,
-  //   watch,
-  //   control,
-  //   formState: { errors },
-  // } = useForm<FormValues>();
-  // const onSubmit = handleSubmit((data) => console.log(data));
-  // type FormValues = {
-  //   FirstName: string;
-  // };
-
   return (
     <>
       <div className="p-4">
@@ -345,6 +352,7 @@ export default function Board() {
 
         <div className="mb-12">
           <BoardParamsForm
+            defaultValues={inputDefaults}
             onSubmit={(values: z.infer<typeof formSchemaBoardParams>) => {
               setBoardParamsFormState((s) => values);
             }}
@@ -406,10 +414,7 @@ export default function Board() {
                   className="w-16 h-16 rounded-md min-w-[30px] min-h-[30px]"
                   aria-label="Choose custom color"
                 ></input>
-                <QuickActionButton
-                  onClickHandler={handleAddCustomColor}
-                  // className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded "
-                >
+                <QuickActionButton onClickHandler={handleAddCustomColor}>
                   Add color
                 </QuickActionButton>
               </div>
@@ -461,21 +466,6 @@ export default function Board() {
           </QuickActionButton>
         </section>
 
-        {/* <section className="sectionDivider">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="ml-4 flex items-center">
-              <span className="mr-2">
-                <h2 className="text-2xl font-medium">
-                  Currently selected color:
-                </h2>
-              </span>
-              <div
-                className="w-6 h-6 rounded border border-gray-300"
-                style={{ backgroundColor: currentColor }}
-              />
-            </div>
-          </div>
-        </section> */}
         {/**
          * Actual board with cells
          */}
@@ -508,6 +498,7 @@ export default function Board() {
                 activeRow={activeRow}
                 knittingMode={knittingMode}
                 reflect={false}
+                colorMap={colorMap}
               ></BoardCenter>
             </div>
             <div>
@@ -557,6 +548,7 @@ export default function Board() {
                 activeRow={activeRow}
                 knittingMode={knittingMode}
                 reflect={true}
+                colorMap={colorMap}
               ></BoardCenter>
             </div>
             <div>
@@ -595,7 +587,6 @@ export default function Board() {
         </section>
         <section className="sectionDivider">
           <h2 className="text-2xl font-bold mb-4">Tips</h2>
-
           <ul className="list-disc list-inside">
             <li>
               To quckly erase cells, click on a with the same color you have
@@ -640,13 +631,6 @@ export default function Board() {
                 Update the board
               </Button>
             </div>
-            {/* <QuickActionButton
-            needsConfirmation={false}
-            type="submit"
-    
-            >
-
-            </QuickActionButton> */}
           </form>
         </section>
 
