@@ -1,19 +1,23 @@
+import { Button } from "@/components/ui/button";
 import React from "react";
+// import Button from "@mui/material/Button";
+import { ElementType } from "react";
+
 type QuickActionButtonProps = {
-  needsConfirmation: boolean;
+  needsConfirmation?: boolean;
   confirmText?: string;
-  onClickHandler: Function;
+  onClickHandler?: Function;
   children: React.ReactNode;
 };
 
 function QuickActionButton({
-  needsConfirmation,
+  needsConfirmation = false,
   confirmText,
-  onClickHandler,
+  onClickHandler = () => {},
   children,
 }: QuickActionButtonProps) {
   return (
-    <button
+    <Button
       onClick={(e) => {
         if (needsConfirmation && confirmText) {
           if (confirm(confirmText)) {
@@ -23,11 +27,9 @@ function QuickActionButton({
           onClickHandler(e);
         }
       }}
-      type="button"
-      className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 

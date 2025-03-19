@@ -18,6 +18,12 @@ import BoardCenter from "./boardCenter";
 import QuickActionButton from "./quickActionButton";
 import LabeledInput from "./labeledInput";
 import { Plus } from "lucide-react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import FormInput from "./formInput";
+import BoardParamsForm, { inputDefaults } from "./boardParamsForm";
+import { z } from "zod";
+import { formSchemaBoardParams } from "@/app/components/boardParamsForm";
+import { Button } from "@/components/ui/button";
 
 export default function Board() {
   /**
@@ -39,30 +45,54 @@ export default function Board() {
   /**
    * State & Derived State & refs
    */
-  const [stichesPerInch, setStichesPerInch] = useState(5);
-  const [rowsPerInch, setRowsPerInch] = useState(10);
-  const [projectWidth, setProjectWidth] = useState(3);
-  const [projectHeight, setProjectHeight] = useState(3);
+  // User inputs for grid
+  // const [stichesPerInch, setStichesPerInch] = useState(5);
+  // const [rowsPerInch, setRowsPerInch] = useState(10);
+  // const [projectWidth, setProjectWidth] = useState(3);
+  // const [projectHeight, setProjectHeight] = useState(3);
+
+  const [boardParamsFormState, setBoardParamsFormState] =
+    useState(inputDefaults);
+
+  // User inputs for knitting mode
   const [activeRow, setActiveRow] = useState(1);
   const [knittingMode, setKnittingMode] = useState(false);
-  // Custom color input
+
+  // Custom colors
   const [customColor, setCustomColor] = useState(getRandomHexColor());
   const [customColorList, setCustomColorList] = useState<string[]>(colorsEnum);
-  // const [fillColor, setFillColor] = useState(colorsEnum[0]);
+
+  // Currently selected color
   const [currentColor, setCurrentColor] = useState(colorsEnum[0]);
+
+  // Saved states to reset app to:
+  // 1) User uploads previously saved state
   const [userSavedBoardState, setUserSavedBoardState] = useState("");
+  // 2) User presses the Undo button to jump back to a previous state
   const [automaticallySavedBoardState, setAutomaticallySavedBoardState] =
     useState<object[]>([]);
-  const numberOfCellsWide = stichesPerInch * projectWidth;
-  const numberOfCellsTall = rowsPerInch * projectHeight;
+
+  /**
+   * Derived state:
+   */
+
+  // Need to change this to only update onSubmit
+  const numberOfCellsWide =
+    boardParamsFormState.stichesPerInch * boardParamsFormState.projectWidth;
+  const numberOfCellsTall =
+    boardParamsFormState.rowsPerInch * boardParamsFormState.projectHeight;
+  //  numberOfCellsWide; // = stichesPerInch * projectWidth;
+  // let numberOfCellsTall; // = rowsPerInch * projectHeight;
+
   const { cellHeight, cellWidth } = cellDimensions(
-    projectWidth,
-    projectHeight,
+    boardParamsFormState.projectWidth,
+    boardParamsFormState.projectHeight,
     numberOfCellsWide,
     numberOfCellsTall,
     defaultCellWidth,
     defaultCellHeight
   );
+
   // Tracking if mouse is pressed
   const isDrawingRef = useRef(false);
   // Tracking if we're in erase mode
@@ -72,10 +102,10 @@ export default function Board() {
   );
 
   /**
-   * Effects
+   * Hooks
    */
+
   useEffect(() => {
-    console.log(automaticallySavedBoardState.length);
     if (board && board[0]) {
       if (
         board.length !== numberOfCellsTall ||
@@ -100,10 +130,16 @@ export default function Board() {
    * Util functions that use state
    */
   function loadSavedState(state: any) {
-    setStichesPerInch(state.stichesPerInch);
-    setRowsPerInch(state.rowsPerInch);
-    setProjectHeight(state.projectHeight);
-    setProjectWidth(state.projectWidth);
+    setBoardParamsFormState({
+      stichesPerInch: state.boardParamsFormState.stichesPerInch,
+      rowsPerInch: state.boardParamsFormState.rowsPerInch,
+      projectWidth: state.boardParamsFormState.projectHeight,
+      projectHeight: state.boardParamsFormState.projectWidth,
+    });
+    // setStichesPerInch(state.stichesPerInch);
+    // setRowsPerInch(state.rowsPerInch);
+    // setProjectHeight(state.projectHeight);
+    // setProjectWidth(state.projectWidth);
     setBoard(state.board);
     setCustomColor(state.customColor);
     setCurrentColor(state.cellColor);
@@ -114,10 +150,11 @@ export default function Board() {
     function createSavedState() {
       return {
         board,
-        stichesPerInch,
-        rowsPerInch,
-        projectHeight,
-        projectWidth,
+        // stichesPerInch,
+        // rowsPerInch,
+        // projectHeight,
+        // projectWidth,
+        boardParamsFormState,
         customColor,
         cellColor: currentColor,
         customColorList,
@@ -125,10 +162,11 @@ export default function Board() {
     },
     [
       board,
-      stichesPerInch,
-      rowsPerInch,
-      projectHeight,
-      projectWidth,
+      // stichesPerInch,
+      // rowsPerInch,
+      // projectHeight,
+      // projectWidth,
+      boardParamsFormState,
       customColor,
       currentColor,
       customColorList,
@@ -285,76 +323,43 @@ export default function Board() {
     };
   }, []);
 
+  // const {
+  //   register,
+  //   handleSubmit,
+  //   watch,
+  //   control,
+  //   formState: { errors },
+  // } = useForm<FormValues>();
+  // const onSubmit = handleSubmit((data) => console.log(data));
+  // type FormValues = {
+  //   FirstName: string;
+  // };
+
   return (
     <>
       <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Knitting Helper</h1>
+        <h1 className="text-4xl font-bold mb-4">Knitting Helper</h1>
 
-        {/**
-         * User inputs
-         */}
-        <section className="sectionDivider">
-          {/* <h2>User Settings:</h2> */}
-          <div className="flex gap-2 mb-2">
-            <LabeledInput
-              value={stichesPerInch}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                setStichesPerInch(isInRange(Number(e.target.value), 1, 25));
-              }}
-              id="StitchesPerInch"
-              type="number"
-              labelText={"Sitches Per inch (left-right):"}
-            ></LabeledInput>
-          </div>
-          <div className="flex gap-2 mb-2">
-            <LabeledInput
-              value={rowsPerInch}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                setRowsPerInch(isInRange(Number(e.target.value), 1, 25));
-              }}
-              id="RowsPerInch"
-              type="number"
-              labelText={"Rows Per inch (up-down):"}
-            ></LabeledInput>
-          </div>
-        </section>
+        {/* <section className="sectionDivider"> */}
+        <h2 className="text-2xl font-bold mb-4">User settings</h2>
 
-        <section className="sectionDivider">
-          <div className="flex gap-2 mb-2">
-            <LabeledInput
-              value={projectWidth}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                setProjectWidth(isInRange(Number(e.target.value), 1, 25));
-              }}
-              id="ProjectWidth"
-              type="number"
-              labelText={"Project Width (left-right inches):"}
-            ></LabeledInput>
-          </div>
-          <div className="flex gap-2 mb-2">
-            <LabeledInput
-              value={projectHeight}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                setProjectHeight(isInRange(Number(e.target.value), 1, 25));
-              }}
-              id="ProjectHeight"
-              type="number"
-              labelText={"Project Height (up-down inches): "}
-            ></LabeledInput>
-          </div>
-        </section>
-        {/**
-         * Display the cell calculations based on user inputs
-         */}
-        <section className="sectionDivider">
-          <div className="">{`Using that data your board will be: ${numberOfCellsWide} cells wide ↔️ x ${numberOfCellsTall} cells high ↕️`}</div>
-        </section>
+        <div className="mb-12">
+          <BoardParamsForm
+            onSubmit={(values: z.infer<typeof formSchemaBoardParams>) => {
+              setBoardParamsFormState((s) => values);
+            }}
+          ></BoardParamsForm>
+          <div className="mb-6"></div>
+          <div className="">{`With the current settings your board  will be: ${numberOfCellsWide} cells wide ↔️ x ${numberOfCellsTall} cells high ↕️`}</div>
+        </div>
+
+        <h2 className="text-2xl font-bold mb-4">Board</h2>
 
         <section className="sectionDivider">
           <div className="flex gap-12">
-            <div className="bg-gray-300 flex flex-col items-center">
+            <div className=" flex flex-col items-center">
               <span className="mr-2">
-                <p className="text-lg font-medium mb-2">Current color:</p>
+                <p className="text-lg font-medium mb-2">Selected color:</p>
               </span>
               <div
                 className="w-12 h-12 rounded border border-gray-300 ring-2 ring-offset-2 ring-black"
@@ -362,12 +367,12 @@ export default function Board() {
               ></div>
             </div>
 
-            <div className="flex flex-col bg-gray-300 flex-wrap max-w-[152px]">
-              <h2 className="text-lg font-medium mb-2">Colors:</h2>
+            <div className="flex flex-col  flex-wrap max-w-[152px]">
+              <h2 className="text-lg font-medium mb-2">Avaliable Colors:</h2>
               <div className="flex flex-wrap gap-2 mb-4">
                 {customColorList.map((color, index) => {
                   const tempButton = (
-                    <button
+                    <Button
                       title={color}
                       key={index + "_" + color}
                       className={`w-8 h-8 rounded-md ${
@@ -390,21 +395,23 @@ export default function Board() {
             </div>
 
             <div className="flex flex-col  gap-4">
-              <div className="flex   bg-gray-300 gap-2">
-                <h2 className="text-lg font-medium mb-2">Select color:</h2>
+              <h2 className="text-lg font-medium mb-2">Additional settings:</h2>
+
+              <div className="flex    gap-2">
+                <h2 className="text-lg font-medium mb-2">Custom color:</h2>
                 <input
                   type="color"
                   value={customColor}
                   onChange={handleCustomColorChange}
-                  className="w-16 h-8 rounded-md"
+                  className="w-16 h-16 rounded-md min-w-[30px] min-h-[30px]"
                   aria-label="Choose custom color"
                 ></input>
-                <button
-                  onClick={handleAddCustomColor}
-                  className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded "
+                <QuickActionButton
+                  onClickHandler={handleAddCustomColor}
+                  // className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded "
                 >
                   Add color
-                </button>
+                </QuickActionButton>
               </div>
               <QuickActionButton
                 needsConfirmation={true}
@@ -418,7 +425,7 @@ export default function Board() {
                 onClickHandler={handleDeleteCustomColor}
               >
                 <div className="flex items-center gap-2">
-                  <p>Delete current color:</p>
+                  <p>Delete selected color:</p>
                   <div
                     className="w-8 h-8 rounded border border-gray-300"
                     style={{ backgroundColor: currentColor }}
@@ -569,7 +576,7 @@ export default function Board() {
         </section>
 
         <section className="sectionDivider">
-          <div className="flex items-center gap-4">
+          <div className="flex items-end gap-4">
             <QuickActionButton
               needsConfirmation={false}
               onClickHandler={() => setKnittingMode((s) => !s)}
@@ -587,7 +594,7 @@ export default function Board() {
           </div>
         </section>
         <section className="sectionDivider">
-          <h2>Tips:</h2>
+          <h2 className="text-2xl font-bold mb-4">Tips</h2>
 
           <ul className="list-disc list-inside">
             <li>
@@ -600,6 +607,7 @@ export default function Board() {
             </li>
           </ul>
         </section>
+        <h2 className="text-2xl font-bold mb-4">Save and reload your work</h2>
 
         <section className="sectionDivider">
           {/**
@@ -618,22 +626,27 @@ export default function Board() {
               }
             }}
           >
-            <LabeledInput
-              value={userSavedBoardState}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                setUserSavedBoardState(e.target.value);
-              }}
-              id="boardState"
-              type="text"
-              labelText={"Saved board state:"}
-            ></LabeledInput>
-            <button
-              className="bg-transparent hover:bg-blue-500 font-semibold hover:text-white py-1 px-1 border border-blue-500 hover:border-transparent rounded"
-              type="submit"
-              value="Submit"
+            <div className="flex items-end gap-2">
+              <LabeledInput
+                value={userSavedBoardState}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  setUserSavedBoardState(e.target.value);
+                }}
+                id="boardState"
+                type="text"
+                labelText={"Saved board state:"}
+              ></LabeledInput>
+              <Button type="submit" value="Submit">
+                Update the board
+              </Button>
+            </div>
+            {/* <QuickActionButton
+            needsConfirmation={false}
+            type="submit"
+    
             >
-              Update the board
-            </button>
+
+            </QuickActionButton> */}
           </form>
         </section>
 

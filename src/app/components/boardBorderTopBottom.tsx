@@ -13,7 +13,6 @@ export default function BoardBorderTopBottom({
   reflect,
 }: BoardBorderTopBottomProps) {
   const midpoint = Math.floor((numberOfCellsWide + 2) / 2);
-
   return (
     <div className="flex">
       {Array(numberOfCellsWide + 2)
