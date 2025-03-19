@@ -19,24 +19,42 @@ export default function BoardBorderTopBottom({
         .fill(0)
         .map((val, idx) => {
           let res;
-
-          if (reflect) {
-            if (idx < midpoint) {
-              res = midpoint - idx;
+          if (numberOfCellsWide % 2 === 0) {
+            // Even number of columns
+            if (reflect) {
+              if (idx < midpoint) {
+                res = midpoint - idx;
+              } else {
+                res = idx - midpoint + 1;
+              }
             } else {
-              res = idx - midpoint + 1;
+              if (idx < midpoint) {
+                res = midpoint - idx;
+              } else {
+                res = idx - midpoint + 1;
+              }
             }
           } else {
-            if (idx < midpoint + 1) {
-              res = midpoint + 1 - idx;
+            // Odd number of columns
+            if (reflect) {
+              if (idx < midpoint) {
+                res = midpoint - idx;
+              } else {
+                res = idx - midpoint + 1;
+              }
             } else {
-              res = idx - midpoint;
+              if (idx < midpoint + 1) {
+                res = midpoint + 1 - idx;
+              } else {
+                res = idx - midpoint;
+              }
             }
           }
 
           if (idx === 0 || idx === numberOfCellsWide + 1) {
             res = "";
           }
+
           return (
             <Cell
               key={idx + "_" + "borderCellTop"}
