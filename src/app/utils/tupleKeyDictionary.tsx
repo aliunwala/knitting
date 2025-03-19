@@ -282,42 +282,42 @@ export class TupleKeyDictionary<T> {
 /** Usage Examples for above */
 // import { TupleKeyDictionary } from './TupleKeyDictionary';
 
-{
-  // Create a dictionary with string values
-  const grid = new TupleKeyDictionary<string>();
+// {
+//   // Create a dictionary with string values
+//   const grid = new TupleKeyDictionary<string>();
 
-  // Add some values using tuple keys
-  grid.set([0, 0], "Top Left");
-  grid.set([0, 1], "Top Right");
-  grid.set([1, 0], "Bottom Left");
-  grid.set([1, 1], "Bottom Right");
+//   // Add some values using tuple keys
+//   grid.set([0, 0], "Top Left");
+//   grid.set([0, 1], "Top Right");
+//   grid.set([1, 0], "Bottom Left");
+//   grid.set([1, 1], "Bottom Right");
 
-  // Get the internal items map (reference)
-  const itemsRef = grid.getItems();
-  console.log("Items map size:", itemsRef.size); // Output: 4
+//   // Get the internal items map (reference)
+//   const itemsRef = grid.getItems();
+//   console.log("Items map size:", itemsRef.size); // Output: 4
 
-  // Modifying the reference affects the original
-  itemsRef.set("2,2", "Extra Item");
-  console.log("Grid size after modifying reference:", grid.size()); // Output: 5
+//   // Modifying the reference affects the original
+//   itemsRef.set("2,2", "Extra Item");
+//   console.log("Grid size after modifying reference:", grid.size()); // Output: 5
 
-  // Get a copy of the items (safe to modify)
-  const itemsCopy = grid.getItemsCopy();
-  itemsCopy.delete("0,0"); // This won't affect the original grid
-  console.log("Original grid still has [0,0]:", grid.has([0, 0])); // Output: true
+//   // Get a copy of the items (safe to modify)
+//   const itemsCopy = grid.getItemsCopy();
+//   itemsCopy.delete("0,0"); // This won't affect the original grid
+//   console.log("Original grid still has [0,0]:", grid.has([0, 0])); // Output: true
 
-  // Create a copy with a new item
-  const gridWithNewItem = grid.getCopyWithNewItem([3, 3], "New Corner");
-  console.log("Original grid size:", grid.size()); // Output: 5
-  console.log("New grid size:", gridWithNewItem.size()); // Output: 6
-  console.log("New item in copy:", gridWithNewItem.get([3, 3])); // Output: "New Corner"
-  console.log("New item in original:", grid.get([3, 3])); // Output: undefined
+//   // Create a copy with a new item
+//   const gridWithNewItem = grid.getCopyWithNewItem([3, 3], "New Corner");
+//   console.log("Original grid size:", grid.size()); // Output: 5
+//   console.log("New grid size:", gridWithNewItem.size()); // Output: 6
+//   console.log("New item in copy:", gridWithNewItem.get([3, 3])); // Output: "New Corner"
+//   console.log("New item in original:", grid.get([3, 3])); // Output: undefined
 
-  // Clone the entire dictionary
-  const clonedGrid = grid.clone();
-  grid.clear(); // Clear the original
-  console.log("Original grid size after clearing:", grid.size()); // Output: 0
-  console.log("Cloned grid size:", clonedGrid.size()); // Output: 5
-}
+//   // Clone the entire dictionary
+//   const clonedGrid = grid.clone();
+//   grid.clear(); // Clear the original
+//   console.log("Original grid size after clearing:", grid.size()); // Output: 0
+//   console.log("Cloned grid size:", clonedGrid.size()); // Output: 5
+// }
 
 // ------------
 // {
@@ -407,76 +407,76 @@ export class TupleKeyDictionary<T> {
 
 // ----------------
 
-{
-  // import { TupleKeyDictionary } from "./TupleKeyDictionary";
+// {
+//   // import { TupleKeyDictionary } from "./TupleKeyDictionary";
 
-  // Example 1: Simple value replacement in a string dictionary
-  const stringDict = new TupleKeyDictionary<string>();
-  stringDict.set([0, 0], "apple");
-  stringDict.set([0, 1], "banana");
-  stringDict.set([1, 0], "apple");
-  stringDict.set([1, 1], "orange");
-  stringDict.set([2, 0], "grape");
+//   // Example 1: Simple value replacement in a string dictionary
+//   const stringDict = new TupleKeyDictionary<string>();
+//   stringDict.set([0, 0], "apple");
+//   stringDict.set([0, 1], "banana");
+//   stringDict.set([1, 0], "apple");
+//   stringDict.set([1, 1], "orange");
+//   stringDict.set([2, 0], "grape");
 
-  // Replace all "apple" values with "pear"
-  const replacedCount1 = stringDict.replaceValues("apple", "pear");
-  console.log(`Replaced ${replacedCount1} values`); // Output: Replaced 2 values
-  console.log(stringDict.get([0, 0])); // Output: "pear"
-  console.log(stringDict.get([1, 0])); // Output: "pear"
+//   // Replace all "apple" values with "pear"
+//   const replacedCount1 = stringDict.replaceValues("apple", "pear");
+//   console.log(`Replaced ${replacedCount1} values`); // Output: Replaced 2 values
+//   console.log(stringDict.get([0, 0])); // Output: "pear"
+//   console.log(stringDict.get([1, 0])); // Output: "pear"
 
-  // Example 2: Using a function to match values
-  const numberDict = new TupleKeyDictionary<number>();
-  numberDict.set([0, 0], 10);
-  numberDict.set([0, 1], 15);
-  numberDict.set([1, 0], 20);
-  numberDict.set([1, 1], 25);
-  numberDict.set([2, 0], 30);
+//   // Example 2: Using a function to match values
+//   const numberDict = new TupleKeyDictionary<number>();
+//   numberDict.set([0, 0], 10);
+//   numberDict.set([0, 1], 15);
+//   numberDict.set([1, 0], 20);
+//   numberDict.set([1, 1], 25);
+//   numberDict.set([2, 0], 30);
 
-  // Replace all values greater than 20 with 0
-  const replacedCount2 = numberDict.replaceValues((value) => value > 20, 0);
-  console.log(`Replaced ${replacedCount2} values`); // Output: Replaced 2 values
-  console.log(numberDict.get([1, 1])); // Output: 0
-  console.log(numberDict.get([2, 0])); // Output: 0
+//   // Replace all values greater than 20 with 0
+//   const replacedCount2 = numberDict.replaceValues((value) => value > 20, 0);
+//   console.log(`Replaced ${replacedCount2} values`); // Output: Replaced 2 values
+//   console.log(numberDict.get([1, 1])); // Output: 0
+//   console.log(numberDict.get([2, 0])); // Output: 0
 
-  // Example 3: Using a function to generate new values
-  const scoreDict = new TupleKeyDictionary<{ score: number; status: string }>();
-  scoreDict.set([0, 0], { score: 75, status: "pending" });
-  scoreDict.set([0, 1], { score: 90, status: "pending" });
-  scoreDict.set([1, 0], { score: 60, status: "complete" });
-  scoreDict.set([1, 1], { score: 85, status: "pending" });
+//   // Example 3: Using a function to generate new values
+//   const scoreDict = new TupleKeyDictionary<{ score: number; status: string }>();
+//   scoreDict.set([0, 0], { score: 75, status: "pending" });
+//   scoreDict.set([0, 1], { score: 90, status: "pending" });
+//   scoreDict.set([1, 0], { score: 60, status: "complete" });
+//   scoreDict.set([1, 1], { score: 85, status: "pending" });
 
-  // Update the status of all pending entries with high scores
-  const replacedCount3 = scoreDict.replaceValues(
-    (value) => value.status === "pending" && value.score >= 85,
-    (oldValue) => ({ ...oldValue, status: "excellent" })
-  );
-  console.log(`Replaced ${replacedCount3} values`); // Output: Replaced 2 values
+//   // Update the status of all pending entries with high scores
+//   const replacedCount3 = scoreDict.replaceValues(
+//     (value) => value.status === "pending" && value.score >= 85,
+//     (oldValue) => ({ ...oldValue, status: "excellent" })
+//   );
+//   console.log(`Replaced ${replacedCount3} values`); // Output: Replaced 2 values
 
-  // Check the results
-  console.log(scoreDict.get([0, 0])); // Output: { score: 75, status: "pending" }
-  console.log(scoreDict.get([0, 1])); // Output: { score: 90, status: "excellent" }
-  console.log(scoreDict.get([1, 1])); // Output: { score: 85, status: "excellent" }
+//   // Check the results
+//   console.log(scoreDict.get([0, 0])); // Output: { score: 75, status: "pending" }
+//   console.log(scoreDict.get([0, 1])); // Output: { score: 90, status: "excellent" }
+//   console.log(scoreDict.get([1, 1])); // Output: { score: 85, status: "excellent" }
 
-  // Example 4: Using the key in the replacement logic
-  const gridDict = new TupleKeyDictionary<{
-    value: number;
-    position: string;
-  }>();
-  gridDict.set([0, 0], { value: 1, position: "" });
-  gridDict.set([0, 1], { value: 2, position: "" });
-  gridDict.set([1, 0], { value: 3, position: "" });
-  gridDict.set([1, 1], { value: 4, position: "" });
+//   // Example 4: Using the key in the replacement logic
+//   const gridDict = new TupleKeyDictionary<{
+//     value: number;
+//     position: string;
+//   }>();
+//   gridDict.set([0, 0], { value: 1, position: "" });
+//   gridDict.set([0, 1], { value: 2, position: "" });
+//   gridDict.set([1, 0], { value: 3, position: "" });
+//   gridDict.set([1, 1], { value: 4, position: "" });
 
-  // Add position information based on the key
-  gridDict.replaceValues(
-    () => true, // Match all values
-    (oldValue, key) => ({
-      ...oldValue,
-      position: `Row ${key[0]}, Column ${key[1]}`,
-    })
-  );
+//   // Add position information based on the key
+//   gridDict.replaceValues(
+//     () => true, // Match all values
+//     (oldValue, key) => ({
+//       ...oldValue,
+//       position: `Row ${key[0]}, Column ${key[1]}`,
+//     })
+//   );
 
-  // Check the results
-  console.log(gridDict.get([0, 1]));
-  // Output: { value: 2, position: "Row 0, Column 1" }
-}
+//   // Check the results
+//   console.log(gridDict.get([0, 1]));
+//   // Output: { value: 2, position: "Row 0, Column 1" }
+// }

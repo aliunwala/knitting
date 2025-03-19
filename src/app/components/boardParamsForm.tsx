@@ -45,18 +45,22 @@ const inputAdornment = {
   stichesPerInch: {
     FormDescription: undefined,
     FormLabel: "Sitches Per inch (left-right):",
+    type: "number",
   },
   rowsPerInch: {
     FormDescription: undefined,
     FormLabel: "Rows Per inch (up-down)",
+    type: "number",
   },
   projectWidth: {
     FormDescription: undefined,
     FormLabel: "Project Width (left-right):",
+    type: "number",
   },
   projectHeight: {
     FormDescription: undefined,
     FormLabel: "Project Height (up-down):",
+    type: "number",
   },
 };
 
@@ -85,6 +89,8 @@ export default function BoardParamsForm({
     inputAdornment[value as keyof typeof inputAdornment].FormLabel !== null;
   const formLabelValue = (value: keyof typeof inputAdornment) =>
     inputAdornment[value as keyof typeof inputAdornment].FormLabel;
+  const formType = (value: keyof typeof inputAdornment) =>
+    inputAdornment[value as keyof typeof inputAdornment].type;
 
   return (
     <div className="">
@@ -111,7 +117,11 @@ export default function BoardParamsForm({
                               <FormLabel>{formLabelValue(value)}</FormLabel>
                             )}
                             <FormControl>
-                              <Input placeholder={value} {...field} />
+                              <Input
+                                type={formType(value)}
+                                placeholder={value}
+                                {...field}
+                              />
                             </FormControl>
                             {showFormDesc(value) && (
                               <FormDescription>
