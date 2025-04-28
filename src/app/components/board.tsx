@@ -20,6 +20,12 @@ import { z } from "zod";
 import { formSchemaBoardParams } from "@/app/components/boardParamsForm";
 import { Button } from "@/components/ui/button";
 import { TupleKeyDictionary } from "../utils/tupleKeyDictionary";
+import {
+  addBoard,
+  getBoards,
+  getRandomBoard,
+  updateBoard,
+} from "./../lib/data";
 
 export default function Board() {
   /**
@@ -344,6 +350,23 @@ export default function Board() {
 
   return (
     <>
+      <form
+        action={() => console.log(addBoard(JSON.stringify(createSavedState())))}
+      >
+        <input type="submit" value={"addBoard"}></input>
+      </form>
+
+      <form
+        action={async () => {
+          // const x = await getBoards();
+          // console.log(x[0].board);
+          const x = await getRandomBoard();
+          loadSavedState(JSON.parse(x[0].board));
+        }}
+      >
+        <input type="submit" value={"LoadBoard"}></input>
+      </form>
+
       <div className="p-4">
         <h1 className="text-4xl font-bold mb-4">Knitting Helper</h1>
 
