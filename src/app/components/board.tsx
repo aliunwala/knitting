@@ -350,13 +350,13 @@ export default function Board() {
 
   return (
     <>
-      <form
+      {/* <form
         action={() => console.log(addBoard(JSON.stringify(createSavedState())))}
       >
         <input type="submit" value={"addBoard"}></input>
-      </form>
+      </form> */}
 
-      <form
+      {/* <form
         action={async () => {
           // const x = await getBoards();
           // console.log(x[0].board);
@@ -365,7 +365,7 @@ export default function Board() {
         }}
       >
         <input type="submit" value={"LoadBoard"}></input>
-      </form>
+      </form> */}
 
       <div className="p-4">
         <h1 className="text-4xl font-bold mb-4">Knitting Helper</h1>
