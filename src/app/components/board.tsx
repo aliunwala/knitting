@@ -350,23 +350,6 @@ export default function Board() {
 
   return (
     <>
-      {/* <form
-        action={() => console.log(addBoard(JSON.stringify(createSavedState())))}
-      >
-        <input type="submit" value={"addBoard"}></input>
-      </form> */}
-
-      {/* <form
-        action={async () => {
-          // const x = await getBoards();
-          // console.log(x[0].board);
-          const x = await getRandomBoard();
-          loadSavedState(JSON.parse(x[0].board));
-        }}
-      >
-        <input type="submit" value={"LoadBoard"}></input>
-      </form> */}
-
       <div className="p-4">
         <h1 className="text-4xl font-bold mb-4">Knitting Helper</h1>
 
@@ -686,6 +669,37 @@ export default function Board() {
           >
             Download state to computer
           </QuickActionButton>
+        </section>
+
+        <h2 className="text-2xl font-bold mb-4">Cloud Storage Functionality</h2>
+        <section className="sectionDivider flex gap-2">
+          <form
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-9 px-4 py-2 has-[>svg]:px-3"
+            action={() => {
+              const savedState = createSavedState();
+              if (JSON.parse(savedState.colorMap).entries.length > 0) {
+                console.log(savedState.colorMap);
+                console.log(addBoard(JSON.stringify(savedState)));
+              }
+            }}
+          >
+            <input type="submit" value={"Add current board to DB"}></input>
+          </form>
+
+          <form
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-9 px-4 py-2 has-[>svg]:px-3"
+            action={async () => {
+              // const x = await getBoards();
+              // console.log(x[0].board);
+              const x = await getRandomBoard();
+              loadSavedState(JSON.parse(x[0].board));
+            }}
+          >
+            <input
+              type="submit"
+              value={"Load a random board from the DB"}
+            ></input>
+          </form>
         </section>
       </div>
     </>
