@@ -59,7 +59,7 @@ export async function addBoard(
   //   }
   // ]
   // max === null if not found
-  let versionResp = await db
+  const versionResp = await db
     .select({ version: max(boards.version) })
     .from(boards)
     .where(eq(boards.passkey, passkey));
@@ -78,7 +78,7 @@ export async function addBoard(
   // INSERT INTO boards (board,passkey,version) VALUES ("savedBoard", "passkey",  )
   // INSERT INTO boards (board, passkey, version) VALUES ('testBoard','c',3)
   // {  "status": "success"}
-  let serverResp = await db
+  const serverResp = await db
     .insert(boards)
     .values({ board: savedBoard, passkey: passkey, version: versionToAdd });
 
@@ -87,7 +87,7 @@ export async function addBoard(
 
 export async function deleteBoard(passkey: string) {
   //get latest version with specified passkey
-  let versionResp = await db
+  const versionResp = await db
     .select({ version: max(boards.version) })
     .from(boards)
     .where(eq(boards.passkey, passkey));
@@ -98,7 +98,7 @@ export async function deleteBoard(passkey: string) {
     myVersion = versionResp[0].version;
   }
 
-  let serverReps = db
+  const serverReps = db
     .delete(boards)
     .where(and(eq(boards.version, myVersion), eq(boards.passkey, passkey)));
 
