@@ -1,0 +1,1 @@
+ALTER TABLE "boards" ALTER COLUMN "version" DROP NOT NULL;
