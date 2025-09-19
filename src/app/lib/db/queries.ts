@@ -26,9 +26,9 @@ export async function getBoards() {
     .from(boards);
 }
 
-export async function addBoard() {
-  return db.insert(boards).values({ board: "test123" });
-}
+// export async function addBoard() {
+// return db.insert(boards).values({ board: "test123" });
+// }
 
 export async function deleteBoard() {
   return db.delete(boards).where(eq(boards.board, "test123"));

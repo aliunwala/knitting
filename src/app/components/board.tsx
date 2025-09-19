@@ -20,7 +20,13 @@ import { z } from "zod";
 import { formSchemaBoardParams } from "@/app/components/boardParamsForm";
 import { Button } from "@/components/ui/button";
 import { TupleKeyDictionary } from "../utils/tupleKeyDictionary";
-import { addBoard, getBoards, getBoard, updateBoard } from "./../lib/data";
+import {
+  addBoard,
+  getBoards,
+  getBoard,
+  updateBoard,
+  deleteBoard,
+} from "./../lib/data";
 
 export default function Board() {
   /**
@@ -53,6 +59,8 @@ export default function Board() {
   // user inputs for Saving Board to DB
   const [passkey, setPasskey] = useState("");
   const [passkeyToLoad, setPasskeyToLoad] = useState("");
+  const [passkeyToUpdate, setPasskeyToUpdate] = useState("");
+  const [passkeyToDelete, setPasskeyToDelete] = useState("");
 
   // User inputs for knitting mode
   const [activeRow, setActiveRow] = useState(1);
@@ -169,6 +177,18 @@ export default function Board() {
    */
   function handlePasskeyToLoad(e: ChangeEvent<HTMLInputElement>) {
     setPasskeyToLoad(String(e.target.value));
+  }
+  /**
+   * Handle when user requests an update to a current board
+   */
+  function handlePasskeyToUpdate(e: ChangeEvent<HTMLInputElement>) {
+    setPasskeyToUpdate(String(e.target.value));
+  }
+  /**
+   * Handle when user requests a board delete
+   */
+  function handlePasskeyToDelete(e: ChangeEvent<HTMLInputElement>) {
+    setPasskeyToDelete(String(e.target.value));
   }
 
   /**
@@ -741,17 +761,14 @@ export default function Board() {
           <div className="sectionDivider flex gap-2">
             <form
               action={async () => {
-                // const x = await getBoards();
-                // console.log(x[0].board);
-                const x = await getBoard(passkeyToLoad);
-                loadSavedState(JSON.parse(x[0].board));
+                await deleteBoard(passkeyToLoad);
               }}
             >
               <div className="flex-col gap-4 flex">
                 <LabeledInput
-                  value={passkeyToLoad}
-                  onChange={handlePasskeyToLoad}
-                  id="loadDBUniqueID"
+                  value={passkeyToDelete}
+                  onChange={handlePasskeyToDelete}
+                  id="deleteDBUniqueID"
                   type="string"
                   labelText={"ID to delete"}
                 ></LabeledInput>
@@ -767,15 +784,19 @@ export default function Board() {
               action={async () => {
                 // const x = await getBoards();
                 // console.log(x[0].board);
-                const x = await getBoard(passkeyToLoad);
-                loadSavedState(JSON.parse(x[0].board));
+                // const x = await updateBoard(passkeyToLoad);
+                // loadSavedState(JSON.parse(x[0].board));
+                const savedState = createSavedState();
+                if (JSON.parse(savedState.colorMap).entries.length > 0) {
+                  console.log(addBoard(JSON.stringify(savedState), passkey));
+                }
               }}
             >
               <div className="flex-col gap-4 flex">
                 <LabeledInput
-                  value={passkeyToLoad}
-                  onChange={handlePasskeyToLoad}
-                  id="loadDBUniqueID"
+                  value={passkeyToUpdate}
+                  onChange={handlePasskeyToUpdate}
+                  id="updateDBUniqueID"
                   type="string"
                   labelText={"ID to update "}
                 ></LabeledInput>
